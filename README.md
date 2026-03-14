@@ -211,6 +211,25 @@ El frontend estará disponible en `http://localhost:5173`
 | PDFs | ReportLab |
 | Iconos | Lucide React |
 
+## Despliegue en GitHub
+
+El proyecto está preparado para subirse a tu cuenta **julian8811**:
+
+1. **Crea un repositorio nuevo** en GitHub:
+   - Ve a [github.com/new](https://github.com/new)
+   - Nombre sugerido: `convotracker`
+   - Deja el repo vacío (sin README, sin .gitignore)
+
+2. **Sube el código** (en la carpeta del proyecto):
+   ```bash
+   git remote add origin https://github.com/julian8811/convotracker.git
+   git branch -M main
+   git push -u origin main
+   ```
+   Si ya añadiste el `remote`, solo ejecuta: `git push -u origin main`
+
+3. Si GitHub te pide autenticación, usa un **Personal Access Token** (Settings → Developer settings → Personal access tokens) como contraseña.
+
 ---
 
 Desarrollado con ConvoTracker v1.0
