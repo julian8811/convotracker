@@ -245,6 +245,13 @@ El proyecto está preparado para subirse a tu cuenta **julian8811**:
 
 3. Si GitHub te pide autenticación, usa un **Personal Access Token** (Settings → Developer settings → Personal access tokens) como contraseña.
 
+### Si el workflow de Pages falla con "Get Pages site failed"
+
+1. Entra en el repo → **Settings** → **Pages**.
+2. En **Build and deployment**, **Source** debe ser **GitHub Actions**.
+3. Si no aparece esa opción, elige **Deploy from a branch** y luego vuelve a **GitHub Actions** cuando esté disponible. Guarda.
+4. Vuelve a ejecutar el workflow (Actions → Deploy ConvoTracker to GitHub Pages → Re-run all jobs).
+
 ---
 
 Desarrollado con ConvoTracker v1.0
