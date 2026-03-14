@@ -4,6 +4,25 @@ ConvoTracker es una aplicación web profesional para rastrear convocatorias naci
 
 **Repositorio:** [github.com/julian8811/convotracker](https://github.com/julian8811/convotracker) · **Demo (GitHub Pages):** [julian8811.github.io/convotracker](https://julian8811.github.io/convotracker/) *(frontend; el backend debe ejecutarse en local para datos en vivo)*
 
+### Ejecutar en local (app completa)
+
+1. **Terminal 1 – Backend:** ejecuta `run-backend.bat` (o `.\run-backend.ps1`).  
+   Debe aparecer: `Backend en http://localhost:8000`, `ConvoTracker v1.0.0 started`, `Scheduler started`.  
+   Déjalo abierto.
+
+2. **Terminal 2 – Frontend:** ejecuta `run-frontend.bat` (o `.\run-frontend.ps1`).  
+   Debe aparecer: `Local: http://localhost:5173/`.  
+   Déjalo abierto.
+
+3. **Abrir la app:** en el navegador entra a **http://localhost:5173**.  
+   Desde ahí tendrás convocatorias, scraping, dashboard y reportes PDF usando el backend en el puerto 8000.
+
+### En GitHub
+
+- La **demo** (solo frontend) está en **https://julian8811.github.io/convotracker/**.
+- Cada `git push` a `main` vuelve a desplegar la demo con GitHub Actions.
+- El **backend** no se ejecuta en GitHub Pages; para scraping y datos en vivo hay que usar la app en local (pasos de arriba).
+
 ## Descripción Funcional
 
 - **Web scraping automatizado** diario de fuentes oficiales (Minciencias, iNNpulsa, Fondo Emprender, EU Funding & Tenders, Banco Mundial)
