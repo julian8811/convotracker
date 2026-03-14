@@ -2,6 +2,8 @@
 
 ConvoTracker es una aplicación web profesional para rastrear convocatorias nacionales e internacionales orientadas a emprendimiento, proyectos de investigación, innovación y transferencia tecnológica.
 
+**Repositorio:** [github.com/julian8811/convotracker](https://github.com/julian8811/convotracker) · **Demo (GitHub Pages):** [julian8811.github.io/convotracker](https://julian8811.github.io/convotracker/) *(frontend; el backend debe ejecutarse en local para datos en vivo)*
+
 ## Descripción Funcional
 
 - **Web scraping automatizado** diario de fuentes oficiales (Minciencias, iNNpulsa, Fondo Emprender, EU Funding & Tenders, Banco Mundial)

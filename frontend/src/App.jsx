@@ -6,9 +6,10 @@ import ConvocatoriaDetail from './pages/ConvocatoriaDetail';
 import DashboardPage from './pages/DashboardPage';
 import ScrapingPage from './pages/ScrapingPage';
 
+const basename = import.meta.env.BASE_URL || '/';
 export default function App() {
   return (
-    <Router>
+    <Router basename={basename}>
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
