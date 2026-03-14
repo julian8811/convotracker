@@ -33,6 +33,10 @@ ConvoTracker es una aplicación web profesional para rastrear convocatorias naci
 
 ```
 ConvoTracker/
+├── run-backend.ps1    # Script para iniciar backend (Windows)
+├── run-frontend.ps1   # Script para iniciar frontend (Windows)
+├── run-backend.bat    # Alternativa .bat para backend
+├── run-frontend.bat   # Alternativa .bat para frontend
 ├── backend/
 │   ├── app/
 │   │   ├── api/            # Endpoints REST
@@ -65,12 +69,21 @@ ConvoTracker/
 
 ## Instalación y Ejecución
 
-### Requisitos
-- Python 3.11 o superior
-- Node.js 18 o superior
-- npm o yarn
+### Ejecución rápida (Windows)
 
-### 1. Backend
+1. **Backend:** doble clic en `run-backend.bat` o en PowerShell: `.\run-backend.ps1`  
+   - Crea el venv, instala dependencias y carga datos de ejemplo si es la primera vez.  
+   - Servidor en **http://localhost:8000** · API docs: **http://localhost:8000/docs**
+
+2. **Frontend:** en otra terminal, doble clic en `run-frontend.bat` o: `.\run-frontend.ps1`  
+   - Instala dependencias si hace falta y arranca Vite.  
+   - App en **http://localhost:5173** (el backend debe estar corriendo en 8000).
+
+### Requisitos
+- Python 3.11 o superior (backend)
+- Node.js 18 o superior y npm (frontend)
+
+### 1. Backend (manual)
 
 ```bash
 cd backend
