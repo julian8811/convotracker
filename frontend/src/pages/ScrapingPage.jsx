@@ -29,7 +29,16 @@ export default function ScrapingPage() {
 
   useEffect(() => { fetchData(); }, []);
 
+  const isDemoSite = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+
   const handleRunScraping = async () => {
+    if (isDemoSite) {
+      setResult({
+        type: 'error',
+        message: 'En la demo en línea no hay backend. Para usar el scraping ejecuta la app en tu PC: run-backend.bat y run-frontend.bat (o despliega el backend en Render/Railway y configura VITE_API_URL).',
+      });
+      return;
+    }
     setRunning(true);
     setResult(null);
     try {
@@ -37,13 +46,27 @@ export default function ScrapingPage() {
       setResult({ type: 'success', message: `Scraping completado: ${res.result?.new || 0} nuevas, ${res.result?.updated || 0} actualizadas` });
       await fetchData();
     } catch (e) {
-      setResult({ type: 'error', message: 'Error al ejecutar el scraping' });
+      setResult({
+        type: 'error',
+        message: 'No se pudo conectar con el backend. Asegúrate de tener el servidor en marcha (run-backend.bat) y de ejecutar el frontend en local (run-frontend.bat).',
+      });
     }
     setRunning(false);
   };
 
   return (
     <div className="space-y-6">
+      {isDemoSite && (
+        <div className="rounded-lg p-4 bg-amber-50 text-amber-800 border border-amber-200 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Estás en la demo (GitHub Pages)</p>
+            <p className="text-sm mt-1 text-amber-700">
+              El scraping y los datos en vivo solo funcionan con el backend. Para usarlos, clona el repo y ejecuta en tu PC: <strong>run-backend.bat</strong> y <strong>run-frontend.bat</strong>.
+            </p>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Web Scraping</h1>
