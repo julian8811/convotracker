@@ -1,12 +1,21 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api/v1`
-  : '/api/v1';
+/**
+ * URL base de la API.
+ * - En producción/GitHub Pages: usa VITE_API_URL si está definido.
+ * - En desarrollo local: siempre usa ruta relativa (/api/v1) para que el proxy
+ *   de Vite reenvíe las peticiones al backend. Esto evita cualquier problema de CORS.
+ */
+function getApiBase() {
+  if (import.meta.env.VITE_API_URL) {
+    return `${String(import.meta.env.VITE_API_URL).replace(/\/$/, '')}/api/v1`;
+  }
+  return '/api/v1';
+}
 
 const api = axios.create({
-  baseURL: API_BASE,
-  timeout: 30000,
+  baseURL: getApiBase(),
+  timeout: 60000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -31,12 +40,33 @@ export const triggerScraping = () =>
 export const getScrapingSources = () =>
   api.get('/scraping/sources').then(r => r.data);
 
+/**
+ * Comprueba si el backend está en marcha.
+ * En producción (VITE_API_URL definido) usa esa base + /health.
+ * En local usa http://127.0.0.1:8000/health para no depender del proxy.
+ */
+export const checkHealth = () => {
+  const base = getApiBase();
+  const healthUrl = base.startsWith('http')
+    ? base.replace(/\/api\/v1\/?$/, '') + '/health'
+    : 'http://127.0.0.1:8000/health';
+  return axios.get(healthUrl, { timeout: 8000 }).then(r => r.data);
+};
+
 export const downloadConvocatoriaPdf = (id) => {
-  window.open(`${API_BASE}/reports/convocatoria/${id}`, '_blank');
+  const base = api.defaults.baseURL || getApiBase();
+  const url = base.startsWith('http')
+    ? `${base}/reports/convocatoria/${id}`
+    : `${window.location.origin}${base}/reports/convocatoria/${id}`;
+  window.open(url, '_blank');
 };
 
 export const downloadAllPdf = () => {
-  window.open(`${API_BASE}/reports/all`, '_blank');
+  const base = api.defaults.baseURL || getApiBase();
+  const url = base.startsWith('http')
+    ? `${base}/reports/all`
+    : `${window.location.origin}${base}/reports/all`;
+  window.open(url, '_blank');
 };
 
 export default api;

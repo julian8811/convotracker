@@ -1,0 +1,100 @@
+====================================================
+  CONVOTRACKER — INICIO RÁPIDO (Windows)
+====================================================
+
+  *** INICIO RÁPIDO: doble clic en  INICIAR-APLICACION.bat  ***
+  (Abre backend + frontend en dos ventanas y luego el navegador.)
+
+REQUISITOS PREVIOS
+------------------
+• Python 3.11+  → https://www.python.org/downloads/  (marcar "Add to PATH")
+• Node.js LTS   → https://nodejs.org/
+• Ambos deben estar en el PATH del sistema.
+
+----------------------------------------------------
+ PASOS PARA ARRANCAR (manual, si no usas INICIAR-APLICACION.bat)
+----------------------------------------------------
+
+PASO 1 — Iniciar el backend
+  a) Haz doble clic en  run-backend.bat  (en la carpeta raíz del proyecto).
+  b) Espera hasta ver:
+       Backend en http://127.0.0.1:8000
+       Uvicorn running on http://0.0.0.0:8000
+  c) Verifica en el navegador: http://127.0.0.1:8000/docs
+     → Debe cargar la documentación de la API (SwaggerUI).
+  d) Deja esa ventana abierta durante toda la sesión.
+
+PASO 2 — Iniciar el frontend
+  a) Haz doble clic en  run-frontend.bat  (en la carpeta raíz del proyecto).
+  b) Espera hasta ver:
+       VITE  ready in X ms
+       Local: http://localhost:5173/
+  c) Abre en el navegador: http://localhost:5173
+  d) Deja esa ventana abierta durante toda la sesión.
+
+PASO 3 — Ejecutar scraping
+  a) En la app web, ve a la sección "Scraping".
+  b) Verifica que aparece "Backend conectado" (barra verde).
+  c) Pulsa "Ejecutar Scraping".
+  d) El proceso puede tardar 2–5 minutos (consulta sitios web externos).
+
+----------------------------------------------------
+ PROBLEMAS FRECUENTES
+----------------------------------------------------
+
+❌ "ModuleNotFoundError: No module named 'uvicorn'"
+   → Ejecutaste python run.py directamente.
+   → Usa run-backend.bat (activa el entorno virtual automáticamente).
+
+❌ Frontend dice "Backend no detectado" o "El backend no responde"
+   → El backend no está arrancado o se cerró la ventana.
+   → Comprueba que run-backend.bat está ejecutándose.
+   → Abre http://127.0.0.1:8000/docs en el navegador para confirmarlo.
+   → Recarga la página del frontend (F5) después de iniciar el backend.
+
+❌ npm error: "no such file or directory, package.json"
+   → Ejecutaste npm run dev desde la carpeta equivocada (backend).
+   → Usa run-frontend.bat desde la raíz del proyecto.
+
+❌ La app web carga pero no hay convocatorias
+   → La base de datos está vacía.
+   → Abre una consola en backend/, activa el venv y ejecuta:
+        venv\Scripts\activate
+        python seed_data.py
+   → O simplemente borra convotracker.db y ejecuta run-backend.bat de nuevo.
+
+❌ Las URLs de convocatorias no abren
+   → Algunas convocatorias de ejemplo tienen URLs ficticias.
+   → Las convocatorias obtenidas por scraping tienen URLs reales.
+   → Ejecuta el scraping para obtener datos actualizados.
+
+----------------------------------------------------
+ ESTRUCTURA DEL PROYECTO
+----------------------------------------------------
+
+run-backend.bat       ← Inicia el servidor backend (FastAPI)
+run-frontend.bat      ← Inicia el servidor frontend (Vite/React)
+INICIO_RAPIDO.txt     ← Este archivo
+
+backend/
+  run.py              ← Punto de entrada del servidor
+  seed_data.py        ← Carga datos de ejemplo en la BD
+  convotracker.db     ← Base de datos SQLite (se crea automáticamente)
+  requirements.txt    ← Dependencias Python
+  app/
+    main.py           ← Aplicación FastAPI + rutas
+    config.py         ← Configuración
+    models/           ← Modelos de base de datos
+    schemas/          ← Esquemas Pydantic
+    api/              ← Rutas REST
+    scraping/         ← Scrapers por fuente
+    services/         ← Lógica de negocio (PDF, etc.)
+
+frontend/
+  src/
+    pages/            ← Páginas React
+    components/       ← Componentes reutilizables
+    services/api.js   ← Llamadas al backend
+  vite.config.js      ← Proxy: /api → http://127.0.0.1:8000
+
+====================================================

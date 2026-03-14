@@ -11,15 +11,33 @@ from app.scraping.sources.innpulsa import InnpulsaScraper
 from app.scraping.sources.eu_funding import EUFundingScraper
 from app.scraping.sources.worldbank import WorldBankScraper
 from app.scraping.sources.sena import SenaScraper
+from app.scraping.sources.undp import UNDPScraper
+from app.scraping.sources.bid import BIDScraper
+from app.scraping.sources.conacyt import ConacytScraper
+from app.scraping.sources.ukri import UKRIScraper
+from app.scraping.sources.unesco import UNESCOScraper
+from app.scraping.sources.caf import CAFScraper
+from app.scraping.sources.giz import GIZScraper
+from app.scraping.sources.cordis import CORDISScraper
+from app.scraping.sources.grants_gov_api import GrantsGovAPIFetcher
 
 logger = logging.getLogger(__name__)
 
 SCRAPERS = [
     MincienciasScraper(),
     InnpulsaScraper(),
-    EUFundingScraper(),
-    WorldBankScraper(),
     SenaScraper(),
+    EUFundingScraper(),
+    CORDISScraper(),
+    WorldBankScraper(),
+    UNDPScraper(),
+    BIDScraper(),
+    CAFScraper(),
+    ConacytScraper(),
+    UKRIScraper(),
+    UNESCOScraper(),
+    GIZScraper(),
+    GrantsGovAPIFetcher(),
 ]
 
 

@@ -17,6 +17,8 @@ ConvoTracker es una aplicación web profesional para rastrear convocatorias naci
 3. **Abrir la app:** en el navegador entra a **http://localhost:5173**.  
    Desde ahí tendrás convocatorias, scraping, dashboard y reportes PDF usando el backend en el puerto 8000.
 
+4. **Scraping:** para que "Ejecutar Scraping" funcione, el **backend debe estar en marcha primero**. Si ves "No hay conexión con el backend", comprueba que en http://localhost:8000/docs la API responde y vuelve a intentar.
+
 ### En GitHub
 
 - La **demo** (solo frontend) está en **https://julian8811.github.io/convotracker/**.
@@ -25,7 +27,7 @@ ConvoTracker es una aplicación web profesional para rastrear convocatorias naci
 
 ## Descripción Funcional
 
-- **Web scraping automatizado** diario de fuentes oficiales (Minciencias, iNNpulsa, Fondo Emprender, EU Funding & Tenders, Banco Mundial)
+- **Web scraping automatizado** diario de fuentes oficiales: Colombia (Minciencias, iNNpulsa, SENA), UE (EU Funding, CORDIS), organismos internacionales (Banco Mundial, PNUD, BID, CAF, UNESCO, GIZ), nacionales (CONACYT México, UKRI Reino Unido) y **API pública Grants.gov (EE.UU.)** sin API key
 - **Clasificación inteligente** por sector, país, entidad, tipo, fechas y montos
 - **Eliminación de duplicados** mediante hashing de contenido
 - **Actualización automática** de estados (abierta, cerrada, próxima)
@@ -71,7 +73,7 @@ ConvoTracker/
 │   │   ├── database.py     # Conexión BD
 │   │   └── main.py         # App FastAPI
 │   ├── requirements.txt
-│   ├── seed_data.py        # Datos de demostración
+│   ├── seed_data.py        # Datos de demostración (100+ convocatorias Colombia y mundial)
 │   └── run.py              # Script de inicio
 ├── frontend/
 │   ├── src/

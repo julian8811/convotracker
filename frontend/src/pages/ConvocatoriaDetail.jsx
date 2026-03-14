@@ -2,9 +2,16 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft, Clock, MapPin, Building2, Tag, DollarSign,
-  ExternalLink, Download, Calendar, Globe, FileText, Users
+  Download, Calendar, Globe, FileText, Users, ExternalLink
 } from 'lucide-react';
 import { getConvocatoria, downloadConvocatoriaPdf } from '../services/api';
+import { ensureAbsoluteUrl } from '../utils/urls';
+
+const ESTADO = {
+  abierta:  { bg: 'rgba(34,197,94,0.14)',  color: '#4ade80', border: 'rgba(34,197,94,0.35)' },
+  cerrada:  { bg: 'rgba(239,68,68,0.14)',  color: '#f87171', border: 'rgba(239,68,68,0.35)' },
+  'próxima':{ bg: 'rgba(249,115,22,0.14)', color: '#fb923c', border: 'rgba(249,115,22,0.35)' },
+};
 
 export default function ConvocatoriaDetail() {
   const { id } = useParams();
@@ -12,137 +19,183 @@ export default function ConvocatoriaDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getConvocatoria(id)
-      .then(setConv)
-      .catch(() => setConv(null))
-      .finally(() => setLoading(false));
+    getConvocatoria(id).then(setConv).catch(() => setConv(null)).finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-10 h-10 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
+      <div style={{ width: 36, height: 36, borderRadius: '50%', border: '2px solid rgba(148,163,184,0.15)', borderTopColor: '#4f46e5', animation: 'spin 0.8s linear infinite' }} />
+    </div>
+  );
 
-  if (!conv) {
-    return (
-      <div className="text-center py-20">
-        <h2 className="text-xl font-semibold text-gray-600">Convocatoria no encontrada</h2>
-        <Link to="/convocatorias" className="text-brand-600 hover:underline mt-4 inline-block">Volver a la lista</Link>
-      </div>
-    );
-  }
+  if (!conv) return (
+    <div style={{ textAlign: 'center', padding: '80px 0' }}>
+      <p style={{ fontSize: 16, fontWeight: 600, color: '#9ca3af', marginBottom: 14 }}>Convocatoria no encontrada</p>
+      <Link to="/convocatorias" style={{ fontSize: 13, color: '#4f46e5', textDecoration: 'none', fontWeight: 600 }}>
+        ← Volver a la lista
+      </Link>
+    </div>
+  );
 
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) : null;
+  const formatDate = (d) => d
+    ? new Date(d).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+    : null;
 
   const formatMonto = (min, max, moneda) => {
     if (!max) return null;
-    const sym = { USD: '$', EUR: '€', COP: 'COP $', GBP: '£' }[moneda] || moneda + ' ';
-    return min ? `${sym}${min.toLocaleString()} - ${sym}${max.toLocaleString()}` : `Hasta ${sym}${max.toLocaleString()}`;
+    const sym = { USD: '$', EUR: '€', COP: 'COP$', GBP: '£', MXN: 'MX$', BRL: 'R$' }[moneda] || (moneda + ' ');
+    return min ? `${sym}${min.toLocaleString()} – ${sym}${max.toLocaleString()}` : `Hasta ${sym}${max.toLocaleString()}`;
   };
 
+  const getUrl = (raw) => {
+    if (!raw) return null;
+    const t = String(raw).trim().split(/\s+/)[0];
+    if (!t) return null;
+    return ensureAbsoluteUrl(t) || (t.startsWith('http') ? t : `https://${t.replace(/^\/+/, '')}`);
+  };
+
+  const urlFuente   = getUrl(conv.url_fuente ?? conv.urlFuente);
+  const urlTerminos = getUrl(conv.url_terminos ?? conv.urlTerminos);
+  const estado      = ESTADO[conv.estado] || ESTADO.cerrada;
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <Link to="/convocatorias" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-600 transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Volver a convocatorias
+    <div style={{ maxWidth: 820, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+      {/* Back */}
+      <Link to="/convocatorias" style={{
+        display: 'inline-flex', alignItems: 'center', gap: 7,
+        fontSize: 12, fontWeight: 600, color: '#6b7280', textDecoration: 'none',
+        letterSpacing: '0.06em', textTransform: 'uppercase',
+        transition: 'color 200ms',
+      }}>
+        <ArrowLeft style={{ width: 14, height: 14 }} />
+        Convocatorias
       </Link>
 
-      <div className="card p-6 lg:p-8">
-        <div className="flex flex-wrap gap-2 mb-4">
-          <span className={`badge text-sm px-3 py-1 ${conv.estado === 'abierta' ? 'badge-open' : conv.estado === 'próxima' ? 'badge-upcoming' : 'badge-closed'}`}>
+      {/* Main card */}
+      <div className="card" style={{ padding: '28px 32px' }}>
+
+        {/* Estado + Tipo badges */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '4px 13px', borderRadius: 999,
+            fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase',
+            background: estado.bg, color: estado.color, border: `1px solid ${estado.border}`,
+          }}>
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor' }} />
             {conv.estado}
           </span>
-          <span className="badge bg-blue-50 text-blue-700 text-sm px-3 py-1">{conv.tipo}</span>
+          <span style={{
+            padding: '4px 13px', borderRadius: 999,
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+            background: 'rgba(148,163,184,0.08)', color: '#6b7280',
+            border: '1px solid rgba(148,163,184,0.22)',
+          }}>
+            {conv.tipo}
+          </span>
         </div>
 
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">{conv.titulo}</h1>
+        {/* Título */}
+        <h1 style={{ margin: '0 0 28px', fontSize: 'clamp(20px,3vw,28px)', fontWeight: 800, color: '#f9fafb', letterSpacing: '-0.03em', lineHeight: 1.25 }}>
+          {conv.titulo}
+        </h1>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          <InfoCard icon={Building2} label="Entidad" value={conv.entidad} />
-          <InfoCard icon={MapPin} label="País" value={conv.pais} />
-          {conv.region && <InfoCard icon={Globe} label="Región" value={conv.region} />}
-          {conv.sector && <InfoCard icon={Tag} label="Sector" value={conv.sector} />}
-          {conv.fecha_apertura && <InfoCard icon={Calendar} label="Apertura" value={formatDate(conv.fecha_apertura)} />}
-          {conv.fecha_cierre && <InfoCard icon={Clock} label="Cierre" value={formatDate(conv.fecha_cierre)} color="text-red-600" />}
+        {/* Info grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 28 }}>
+          <InfoCard Icon={Building2} label="Entidad"   value={conv.entidad} />
+          <InfoCard Icon={MapPin}    label="País"      value={conv.pais} />
+          {conv.region    && <InfoCard Icon={Globe}     label="Región"    value={conv.region} />}
+          {conv.sector    && <InfoCard Icon={Tag}       label="Sector"    value={conv.sector} />}
+          {conv.fecha_apertura && <InfoCard Icon={Calendar} label="Apertura" value={formatDate(conv.fecha_apertura)} />}
+          {conv.fecha_cierre   && <InfoCard Icon={Clock}    label="Cierre"   value={formatDate(conv.fecha_cierre)} color="#fb923c" />}
           {formatMonto(conv.monto_minimo, conv.monto_maximo, conv.moneda) && (
-            <InfoCard icon={DollarSign} label="Monto" value={formatMonto(conv.monto_minimo, conv.monto_maximo, conv.moneda)} color="text-emerald-600" />
+            <InfoCard Icon={DollarSign} label="Monto" value={formatMonto(conv.monto_minimo, conv.monto_maximo, conv.moneda)} color="#06b6d4" />
           )}
         </div>
 
-        {conv.descripcion && (
-          <Section title="Descripción" icon={FileText}>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-line">{conv.descripcion}</p>
-          </Section>
-        )}
+        {/* Secciones de texto */}
+        {conv.descripcion && <TextSection Icon={FileText} title="Descripción" text={conv.descripcion} />}
+        {conv.requisitos  && <TextSection Icon={FileText} title="Requisitos"  text={conv.requisitos} />}
+        {conv.beneficiarios && <TextSection Icon={Users}  title="Beneficiarios" text={conv.beneficiarios} />}
 
-        {conv.requisitos && (
-          <Section title="Requisitos" icon={FileText}>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-line">{conv.requisitos}</p>
-          </Section>
-        )}
-
-        {conv.beneficiarios && (
-          <Section title="Beneficiarios" icon={Users}>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-line">{conv.beneficiarios}</p>
-          </Section>
-        )}
-
+        {/* Tags */}
         {conv.tags && (
-          <div className="mt-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Etiquetas</h3>
-            <div className="flex flex-wrap gap-2">
+          <div style={{ marginTop: 24 }}>
+            <p className="panel-title" style={{ marginBottom: 10 }}>Etiquetas</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {conv.tags.split(',').map((tag, i) => (
-                <span key={i} className="badge bg-gray-100 text-gray-600">{tag.trim()}</span>
+                <span key={i} style={{
+                  padding: '3px 10px', borderRadius: 999,
+                  fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
+                  background: 'rgba(79,70,229,0.1)', color: '#818cf8',
+                  border: '1px solid rgba(79,70,229,0.28)',
+                }}>
+                  {tag.trim()}
+                </span>
               ))}
             </div>
           </div>
         )}
 
-        <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t">
-          {conv.url_fuente && (
-            <a href={conv.url_fuente} target="_blank" rel="noopener noreferrer" className="btn-primary flex items-center gap-2">
-              <ExternalLink className="w-4 h-4" /> Ver convocatoria original
+        {/* Acciones */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 32, paddingTop: 24, borderTop: '1px solid rgba(148,163,184,0.1)' }}>
+          {urlFuente && (
+            <a href={urlFuente} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
+              <ExternalLink style={{ width: 15, height: 15 }} />
+              Ver convocatoria original
             </a>
           )}
-          {conv.url_terminos && (
-            <a href={conv.url_terminos} target="_blank" rel="noopener noreferrer" className="btn-secondary flex items-center gap-2">
-              <FileText className="w-4 h-4" /> Términos de referencia
+          {urlTerminos && urlTerminos !== urlFuente && (
+            <a href={urlTerminos} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ textDecoration: 'none' }}>
+              <FileText style={{ width: 14, height: 14 }} />
+              Términos de referencia
             </a>
           )}
-          <button onClick={() => downloadConvocatoriaPdf(conv.id)} className="btn-secondary flex items-center gap-2">
-            <Download className="w-4 h-4" /> Descargar PDF
+          <button onClick={() => downloadConvocatoriaPdf(conv.id)} className="btn-secondary">
+            <Download style={{ width: 14, height: 14 }} />
+            Descargar PDF
           </button>
         </div>
+
+        {!urlFuente && (
+          <p style={{ marginTop: 12, fontSize: 11, color: '#4b5563', fontStyle: 'italic' }}>
+            No hay URL de fuente disponible para esta convocatoria.
+          </p>
+        )}
       </div>
 
-      <div className="text-xs text-gray-400 text-center">
-        Fuente: {conv.fuente_scraping} | Registrado: {formatDate(conv.created_at)}
-      </div>
+      <p style={{ fontSize: 11, color: '#374151', textAlign: 'center', letterSpacing: '0.04em' }}>
+        Fuente: {conv.fuente_scraping} · Registrado: {formatDate(conv.created_at)}
+      </p>
     </div>
   );
 }
 
-function InfoCard({ icon: Icon, label, value, color = 'text-gray-900' }) {
+function InfoCard({ Icon, label, value, color = '#e5e7eb' }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-4 h-4 text-gray-400" />
-        <span className="text-xs font-medium text-gray-500">{label}</span>
+    <div style={{
+      padding: '12px 14px', borderRadius: 12,
+      background: 'rgba(15,23,42,0.6)',
+      border: '1px solid rgba(148,163,184,0.14)',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
+        <Icon style={{ width: 13, height: 13, color: '#4b5563' }} />
+        <span style={{ fontSize: 10, fontWeight: 700, color: '#4b5563', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{label}</span>
       </div>
-      <p className={`font-semibold ${color}`}>{value}</p>
+      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color }}>{value}</p>
     </div>
   );
 }
 
-function Section({ title, icon: Icon, children }) {
+function TextSection({ Icon, title, text }) {
   return (
-    <div className="mt-6">
-      <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
-        <Icon className="w-5 h-5 text-brand-500" /> {title}
-      </h3>
-      {children}
+    <div style={{ marginTop: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <Icon style={{ width: 14, height: 14, color: '#4f46e5' }} />
+        <span className="panel-title">{title}</span>
+      </div>
+      <p style={{ margin: 0, fontSize: 13, lineHeight: 1.75, color: '#9ca3af', whiteSpace: 'pre-line' }}>{text}</p>
     </div>
   );
 }

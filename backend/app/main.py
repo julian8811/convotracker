@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 
 from app.config import settings
 from app.database import init_db, get_db, async_session
@@ -24,6 +24,17 @@ scheduler = AsyncIOScheduler()
 async def lifespan(app: FastAPI):
     await init_db()
     logger.info(f"{settings.APP_NAME} v{settings.APP_VERSION} started")
+
+    # Si la BD está vacía (p. ej. primer despliegue en Render), cargar datos de ejemplo
+    async with async_session() as db:
+        r = await db.execute(select(func.count()).select_from(Convocatoria))
+        if (r.scalar() or 0) == 0:
+            try:
+                from seed_data import seed
+                await seed()
+                logger.info("Seed de convocatorias ejecutado (BD vacía)")
+            except Exception as e:
+                logger.warning("Seed no ejecutado: %s", e)
 
     if settings.SCRAPING_ENABLED:
         scheduler.add_job(
@@ -54,9 +65,10 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=settings.CORS_HEADERS,
+    expose_headers=["Content-Disposition"],
 )
 
 app.include_router(api_router)
@@ -91,7 +103,10 @@ async def trigger_single_scraper(scraper_name: str):
 
 @app.get("/api/v1/scraping/sources")
 async def list_sources():
-    return [{"name": s.name, "url": s.base_url, "country": s.country} for s in SCRAPERS]
+    return [
+        {"name": getattr(s, "name", "Fuente"), "url": getattr(s, "base_url", ""), "country": getattr(s, "country", "")}
+        for s in SCRAPERS
+    ]
 
 
 @app.get("/api/v1/reports/convocatoria/{convocatoria_id}")
@@ -135,3 +150,9 @@ async def download_all_pdf():
 @app.get("/health")
 async def health():
     return {"status": "healthy", "version": settings.APP_VERSION}
+
+
+@app.get("/api/v1/health")
+async def api_health():
+    """Comprueba que la API responde (útil para el frontend)."""
+    return {"status": "ok", "version": settings.APP_VERSION}

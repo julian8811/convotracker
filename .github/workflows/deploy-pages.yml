@@ -35,6 +35,8 @@ jobs:
         run: npm run build
         env:
           GITHUB_ACTIONS: true
+          # Si existe el secret VITE_API_URL (ej. URL del backend en Render), el front usará esa API en producción
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: SPA fallback for GitHub Pages
         run: cp frontend/dist/index.html frontend/dist/404.html

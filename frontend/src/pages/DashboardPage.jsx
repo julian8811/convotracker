@@ -1,159 +1,168 @@
 import { useState, useEffect } from 'react';
-import { Globe, TrendingUp, Clock, BarChart3, PieChart } from 'lucide-react';
+import { Globe, TrendingUp, Clock, BarChart3, PieChart, Building2 } from 'lucide-react';
 import { getDashboardStats } from '../services/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart as RechartsPie, Pie, Cell, Legend, LineChart, Line, Area, AreaChart
+  PieChart as RechartsPie, Pie, Cell, AreaChart, Area
 } from 'recharts';
 
-const COLORS = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#dc2626', '#0891b2', '#4f46e5', '#be185d', '#065f46', '#9333ea'];
+const PALETTE = ['#4f46e5','#06b6d4','#22c55e','#a855f7','#f97316','#3b82f6','#eab308','#ec4899'];
+const TT_STYLE = { borderRadius: 12, border: '1px solid rgba(148,163,184,0.25)', backgroundColor: '#0c0f1e', fontSize: 12 };
+const TICK = { fontSize: 11, fill: '#6b7280' };
 
 export default function DashboardPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    getDashboardStats()
-      .then(setStats)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  useEffect(() => { getDashboardStats().then(setStats).catch(() => {}).finally(() => setLoading(false)); }, []);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-10 h-10 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
+      <div style={{ width: 36, height: 36, borderRadius: '50%', border: '2px solid rgba(148,163,184,0.15)', borderTopColor: '#4f46e5', animation: 'spin 0.8s linear infinite' }} />
+    </div>
+  );
 
-  if (!stats) {
-    return (
-      <div className="text-center py-20">
-        <BarChart3 className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-600">No hay datos disponibles</h3>
-        <p className="text-gray-400 mt-2">Ejecuta el scraping primero para obtener datos</p>
-      </div>
-    );
-  }
+  if (!stats) return (
+    <div style={{ textAlign: 'center', padding: '80px 0' }}>
+      <BarChart3 style={{ width: 48, height: 48, color: '#374151', margin: '0 auto 14px' }} />
+      <p style={{ fontSize: 15, fontWeight: 600, color: '#9ca3af' }}>No hay datos disponibles</p>
+      <p style={{ fontSize: 13, color: '#4b5563', marginTop: 6 }}>Ejecuta el scraping primero</p>
+    </div>
+  );
 
-  const paisData = Object.entries(stats.por_pais)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([name, value]) => ({ name, value }));
+  const paisData   = Object.entries(stats.por_pais).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([name,value])=>({name,value}));
+  const tipoLabels = { emprendimiento:'Emprend.',investigación:'Investig.',innovación:'Innovac.',transferencia_tecnológica:'Transfer.',desarrollo:'Desarrollo',cooperación_internacional:'Cooperac.',otro:'Otro' };
+  const tipoData   = Object.entries(stats.por_tipo).map(([name,value])=>({name:tipoLabels[name]||name,value}));
+  const sectorData = Object.entries(stats.por_sector).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,value])=>({name,value}));
+  const mesData    = Object.entries(stats.por_mes).sort().slice(-12).map(([name,value])=>({name,value}));
 
-  const tipoLabels = {
-    emprendimiento: 'Emprend.', investigación: 'Investig.', innovación: 'Innovac.',
-    transferencia_tecnológica: 'Transfer.', desarrollo: 'Desarrollo',
-    cooperación_internacional: 'Cooperac.', otro: 'Otro',
-  };
-  const tipoData = Object.entries(stats.por_tipo).map(([name, value]) => ({
-    name: tipoLabels[name] || name, value
-  }));
-
-  const sectorData = Object.entries(stats.por_sector)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([name, value]) => ({ name, value }));
-
-  const mesData = Object.entries(stats.por_mes)
-    .sort()
-    .slice(-12)
-    .map(([name, value]) => ({ name, value }));
+  const kpis = [
+    { label:'Total',        value: stats.total_convocatorias, icon: Globe,     color:'#06b6d4', bg:'rgba(6,182,212,0.12)',   border:'rgba(6,182,212,0.25)' },
+    { label:'Abiertas',     value: stats.abiertas,            icon: TrendingUp, color:'#22c55e', bg:'rgba(34,197,94,0.12)',  border:'rgba(34,197,94,0.25)' },
+    { label:'Cerradas',     value: stats.cerradas,            icon: Clock,      color:'#ef4444', bg:'rgba(239,68,68,0.12)',  border:'rgba(239,68,68,0.25)' },
+    { label:'Monto prom.',  value: stats.monto_promedio ? `$${(stats.monto_promedio/1000).toFixed(0)}K` : 'N/A', icon: BarChart3, color:'#a855f7', bg:'rgba(168,85,247,0.12)', border:'rgba(168,85,247,0.25)' },
+  ];
 
   return (
-    <div className="space-y-6">
+    <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500 mt-1">Análisis y visualización de convocatorias</p>
+        <div className="eyebrow" style={{ marginBottom: 10, width: 'fit-content' }}>
+          <span className="eyebrow-dot" />Dashboard · Análisis
+        </div>
+        <p style={{ fontSize: 12, color: '#4b5563', letterSpacing: '0.06em' }}>
+          Visualización y estadísticas de convocatorias rastreadas
+        </p>
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <KPICard label="Total" value={stats.total_convocatorias} icon={Globe} gradient="from-blue-500 to-blue-600" />
-        <KPICard label="Abiertas" value={stats.abiertas} icon={TrendingUp} gradient="from-emerald-500 to-emerald-600" />
-        <KPICard label="Cerradas" value={stats.cerradas} icon={Clock} gradient="from-red-400 to-red-500" />
-        <KPICard label="Monto Promedio" value={stats.monto_promedio ? `$${(stats.monto_promedio/1000).toFixed(0)}K` : 'N/A'} icon={BarChart3} gradient="from-amber-500 to-amber-600" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+        {kpis.map((k, i) => (
+          <div key={i} className="card" style={{ padding: '18px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span className="panel-title">{k.label}</span>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: k.bg, border: `1px solid ${k.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <k.icon style={{ width: 17, height: 17, color: k.color }} />
+              </div>
+            </div>
+            <p style={{ margin: 0, fontSize: 28, fontWeight: 800, color: '#f9fafb', letterSpacing: '-0.03em' }}>
+              {typeof k.value === 'number' ? k.value.toLocaleString() : k.value}
+            </p>
+          </div>
+        ))}
       </div>
 
-      {/* Charts row 1 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard title="Convocatorias por País" icon={Globe}>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={paisData} layout="vertical" margin={{ left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis type="number" tick={{ fontSize: 12 }} />
-              <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11 }} />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} />
-              <Bar dataKey="value" fill="#2563eb" radius={[0, 4, 4, 0]} />
+      {/* Gráficos fila 1 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 16 }}>
+        <ChartPanel title="Por país (top 10)" Icon={Globe}>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={paisData} layout="vertical" margin={{ left: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <XAxis type="number" tick={TICK} />
+              <YAxis dataKey="name" type="category" width={90} tick={{ ...TICK, fontSize: 10 }} />
+              <Tooltip contentStyle={TT_STYLE} cursor={{ fill: 'rgba(79,70,229,0.08)' }} />
+              <Bar dataKey="value" fill="#4f46e5" radius={[0, 7, 7, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </ChartCard>
+        </ChartPanel>
 
-        <ChartCard title="Distribución por Tipo" icon={PieChart}>
-          <ResponsiveContainer width="100%" height={300}>
+        <ChartPanel title="Distribución por tipo" Icon={PieChart}>
+          <ResponsiveContainer width="100%" height={280}>
             <RechartsPie>
-              <Pie data={tipoData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={{ stroke: '#94a3b8' }}>
-                {tipoData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              <Pie
+                data={tipoData} cx="50%" cy="50%"
+                innerRadius={55} outerRadius={95}
+                dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent*100).toFixed(0)}%`}
+                labelLine={{ stroke: 'rgba(148,163,184,0.2)' }}
+              >
+                {tipoData.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
               </Pie>
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} />
+              <Tooltip contentStyle={TT_STYLE} />
             </RechartsPie>
           </ResponsiveContainer>
-        </ChartCard>
+        </ChartPanel>
       </div>
 
-      {/* Charts row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard title="Tendencia Mensual" icon={TrendingUp}>
-          <ResponsiveContainer width="100%" height={300}>
+      {/* Gráficos fila 2 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 16 }}>
+        <ChartPanel title="Tendencia mensual" Icon={TrendingUp}>
+          <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={mesData}>
               <defs>
-                <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                <linearGradient id="gv" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#4f46e5" stopOpacity={0.45} />
+                  <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} />
-              <Area type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={2} fill="url(#colorVal)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <XAxis dataKey="name" tick={TICK} />
+              <YAxis tick={TICK} />
+              <Tooltip contentStyle={TT_STYLE} cursor={{ stroke: 'rgba(79,70,229,0.4)' }} />
+              <Area type="monotone" dataKey="value" stroke="#4f46e5" strokeWidth={2} fill="url(#gv)" />
             </AreaChart>
           </ResponsiveContainer>
-        </ChartCard>
+        </ChartPanel>
 
-        <ChartCard title="Por Sector" icon={BarChart3}>
-          <ResponsiveContainer width="100%" height={300}>
+        <ChartPanel title="Por sector (top 8)" Icon={BarChart3}>
+          <ResponsiveContainer width="100%" height={260}>
             <BarChart data={sectorData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-20} textAnchor="end" height={60} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                {sectorData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <XAxis dataKey="name" tick={{ ...TICK, fontSize: 9 }} angle={-20} textAnchor="end" height={55} />
+              <YAxis tick={TICK} />
+              <Tooltip contentStyle={TT_STYLE} cursor={{ fill: 'rgba(79,70,229,0.08)' }} />
+              <Bar dataKey="value" radius={[7, 7, 0, 0]}>
+                {sectorData.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </ChartCard>
+        </ChartPanel>
       </div>
 
-      {/* Top entities */}
+      {/* Top entidades */}
       {Object.keys(stats.por_entidad).length > 0 && (
-        <div className="card p-6">
-          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Building2Icon /> Top Entidades
-          </h3>
-          <div className="space-y-3">
+        <div className="card" style={{ padding: '20px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
+            <Building2 style={{ width: 16, height: 16, color: '#4f46e5' }} />
+            <span className="panel-title">Top entidades</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {Object.entries(stats.por_entidad).slice(0, 10).map(([name, count], i) => {
               const max = Math.max(...Object.values(stats.por_entidad));
               const pct = (count / max) * 100;
+              const color = PALETTE[i % PALETTE.length];
               return (
-                <div key={i} className="flex items-center gap-4">
-                  <span className="w-40 text-sm text-gray-700 truncate font-medium">{name}</span>
-                  <div className="flex-1 bg-gray-100 rounded-full h-3">
-                    <div className="h-3 rounded-full bg-gradient-to-r from-brand-500 to-brand-600" style={{ width: `${pct}%` }} />
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <span style={{ width: 150, fontSize: 12, color: '#e5e7eb', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    {name}
+                  </span>
+                  <div style={{ flex: 1, height: 6, borderRadius: 999, background: 'rgba(148,163,184,0.08)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, borderRadius: 999, background: color, transition: 'width 600ms ease-out' }} />
                   </div>
-                  <span className="text-sm font-semibold text-gray-600 w-8 text-right">{count}</span>
+                  <span style={{ width: 28, fontSize: 12, fontWeight: 700, color: color, textAlign: 'right', flexShrink: 0 }}>
+                    {count}
+                  </span>
                 </div>
               );
             })}
@@ -164,30 +173,13 @@ export default function DashboardPage() {
   );
 }
 
-function Building2Icon() {
-  return <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-500"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>;
-}
-
-function KPICard({ label, value, icon: Icon, gradient }) {
+function ChartPanel({ title, Icon, children }) {
   return (
-    <div className="card p-6">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-gray-500">{label}</span>
-        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-          <Icon className="w-5 h-5 text-white" />
-        </div>
+    <div className="card" style={{ padding: '20px 20px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <Icon style={{ width: 15, height: 15, color: '#4f46e5' }} />
+        <span className="panel-title">{title}</span>
       </div>
-      <p className="text-3xl font-bold text-gray-900">{typeof value === 'number' ? value.toLocaleString() : value}</p>
-    </div>
-  );
-}
-
-function ChartCard({ title, icon: Icon, children }) {
-  return (
-    <div className="card p-6">
-      <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-        <Icon className="w-5 h-5 text-brand-500" /> {title}
-      </h3>
       {children}
     </div>
   );
