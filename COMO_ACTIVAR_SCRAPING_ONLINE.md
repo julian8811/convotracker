@@ -14,12 +14,19 @@ Para que **Ejecutar Scraping** funcione en la demo en línea (sin usar tu PC), e
    | Campo | Valor |
    |-------|--------|
    | **Name** | `convotracker-api` (o el que quieras) |
-   | **Root Directory** | `backend` |
+   | **Root Directory** | `backend` ← **Importante:** debe ser exactamente `backend` para que encuentre `requirements.txt` |
    | **Runtime** | Python 3 |
    | **Build Command** | `pip install -r requirements.txt` |
    | **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
 
-5. Pulsa **Create Web Service**. Render construirá y desplegará el backend.
+   **Si ya creaste el servicio y falla con "No such file or directory: requirements.txt":**  
+   En Render → tu servicio → **Settings** → **Build & Deploy** → en **Root Directory** escribe `backend` y guarda. Luego **Manual Deploy** → **Deploy latest commit**.
+
+   **Alternativa (sin usar Root Directory):** deja **Root Directory** vacío y usa estos comandos:
+   - **Build Command:** `cd backend && pip install -r requirements.txt`
+   - **Start Command:** `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+
+5. Pulsa **Create Web Service** (o **Save** si estabas editando). Render construirá y desplegará el backend.
 6. Cuando termine, copia la **URL del servicio** (ej. `https://convotracker-api.onrender.com`). No incluyas barra final.
 
 ---
@@ -50,3 +57,14 @@ Para que **Ejecutar Scraping** funcione en la demo en línea (sin usar tu PC), e
 - Entra en **Scraping**. Deberías ver “Backend conectado” y poder usar **Ejecutar Scraping**.
 
 **Nota:** En el plan gratuito de Render el servicio puede tardar unos segundos en despertar si ha estado inactivo; si la primera vez falla, espera un poco y recarga la página.
+
+---
+
+## ¿Se puede usar Vercel para el backend?
+
+**Vercel** está pensado sobre todo para frontends y funciones serverless (código que se ejecuta por petición, no 24/7). Este backend usa:
+
+- **SQLite** y archivos persistentes (en Vercel el sistema de archivos es efímero).
+- **APScheduler** (tareas en segundo plano cada 24 h), que no encaja con el modelo serverless.
+
+Por eso **Render, Railway o Fly.io** son más adecuados para este backend. Si aun así quieres probar en Vercel, habría que adaptar el proyecto (por ejemplo base de datos externa y quitar el scheduler o moverlo a otro servicio).
