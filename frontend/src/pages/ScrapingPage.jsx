@@ -31,13 +31,14 @@ export default function ScrapingPage() {
   useEffect(() => { fetchData(); }, []);
 
   const handleRunScraping = async () => {
-    if (isDemoSite) {
-      setResult({ type: 'warning', message: 'La demo en línea no tiene backend. Ejecuta run-backend.bat + el frontend en tu PC para usar el scraping en local.' });
-      return;
-    }
     setRunning(true); setResult(null);
     if (!(await pingBackend())) {
-      setResult({ type: 'error', message: 'El backend no responde en http://127.0.0.1:8000. Ejecuta run-backend.bat y deja esa ventana abierta, luego recarga (F5).' });
+      setResult({
+        type: 'error',
+        message: isDemoSite
+          ? 'Backend no disponible. Para que el scraping funcione en la demo, despliega el backend en Render y configura VITE_API_URL (ver guía en el repositorio: COMO_ACTIVAR_SCRAPING_ONLINE.md).'
+          : 'El backend no responde. Ejecuta run-backend.bat y deja esa ventana abierta, luego recarga (F5).',
+      });
       setRunning(false); return;
     }
     try {
@@ -65,67 +66,62 @@ export default function ScrapingPage() {
   return (
     <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* Estado del backend */}
-      {!isDemoSite && (
-        <div style={{
-          display: 'flex', alignItems: 'flex-start', gap: 14,
-          padding: '14px 18px', borderRadius: 14,
-          background: backendStyle().bg, border: `1px solid ${backendStyle().border}`,
-          color: backendStyle().color,
-        }}>
-          {backendOk === true  && <Wifi     style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />}
-          {backendOk === false && <WifiOff  style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />}
-          {backendOk === null  && <Loader2  style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2, animation: 'spin 1s linear infinite' }} />}
+      {/* Estado del backend (local y demo) */}
+      <div style={{
+        display: 'flex', alignItems: 'flex-start', gap: 14,
+        padding: '14px 18px', borderRadius: 14,
+        background: backendStyle().bg, border: `1px solid ${backendStyle().border}`,
+        color: backendStyle().color,
+      }}>
+        {backendOk === true  && <Wifi     style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />}
+        {backendOk === false && <WifiOff  style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />}
+        {backendOk === null  && <Loader2  style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2, animation: 'spin 1s linear infinite' }} />}
 
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {backendOk === true && (
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>
-                Backend conectado —{' '}
-                <span style={{ fontWeight: 400, color: '#9ca3af' }}>Todo listo para ejecutar el scraping.</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {backendOk === true && (
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>
+              Backend conectado —{' '}
+              <span style={{ fontWeight: 400, color: '#9ca3af' }}>
+                {isDemoSite ? 'Scraping disponible en la demo.' : 'Todo listo para ejecutar el scraping.'}
+              </span>
+            </p>
+          )}
+          {backendOk === false && (
+            <>
+              <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700 }}>Backend no detectado</p>
+              <p style={{ margin: 0, fontSize: 12, color: '#9ca3af', lineHeight: 1.6 }}>
+                {isDemoSite ? (
+                  <>
+                    Para que el scraping funcione aquí, despliega el backend en Render y configura el secret <strong style={{ color: '#e5e7eb' }}>VITE_API_URL</strong> en GitHub.{' '}
+                    <a href="https://github.com/julian8811/convotracker/blob/main/COMO_ACTIVAR_SCRAPING_ONLINE.md" target="_blank" rel="noopener noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>Guía paso a paso</a>.
+                  </>
+                ) : (
+                  <>
+                    1) Ejecuta <strong style={{ color: '#e5e7eb' }}>run-backend.bat</strong> y deja esa ventana abierta.{' '}
+                    2) Verifica en{' '}
+                    <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
+                      127.0.0.1:8000/docs
+                    </a>.{' '}
+                    3) Recarga esta página (F5).
+                  </>
+                )}
               </p>
-            )}
-            {backendOk === false && (
-              <>
-                <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700 }}>Backend no detectado</p>
-                <p style={{ margin: 0, fontSize: 12, color: '#9ca3af', lineHeight: 1.6 }}>
-                  1) Ejecuta <strong style={{ color: '#e5e7eb' }}>run-backend.bat</strong> y deja esa ventana abierta.{' '}
-                  2) Verifica en{' '}
-                  <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
-                    127.0.0.1:8000/docs
-                  </a>.{' '}
-                  3) Recarga esta página (F5).
-                </p>
-              </>
-            )}
-            {backendOk === null && (
-              <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>Verificando conexión con el backend…</p>
-            )}
-          </div>
-          {backendOk !== null && (
-            <button
-              onClick={() => { setBackendOk(null); fetchData(); }}
-              className="btn-secondary"
-              style={{ padding: '6px 10px', flexShrink: 0 }}
-            >
-              <RefreshCw style={{ width: 13, height: 13 }} />
-            </button>
+            </>
+          )}
+          {backendOk === null && (
+            <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>Verificando conexión con el backend…</p>
           )}
         </div>
-      )}
-
-      {/* Banner demo */}
-      {isDemoSite && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 18px', borderRadius: 14, background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.28)', color: '#fb923c' }}>
-          <AlertCircle style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
-          <div>
-            <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: '#f9fafb' }}>Demo en línea (GitHub Pages)</p>
-            <p style={{ margin: 0, fontSize: 12, color: '#9ca3af', lineHeight: 1.6 }}>
-              El scraping en vivo requiere el backend local. Descarga el proyecto y ejecuta{' '}
-              <strong style={{ color: '#e5e7eb' }}>run-backend.bat</strong>.
-            </p>
-          </div>
-        </div>
-      )}
+        {backendOk !== null && (
+          <button
+            onClick={() => { setBackendOk(null); fetchData(); }}
+            className="btn-secondary"
+            style={{ padding: '6px 10px', flexShrink: 0 }}
+          >
+            <RefreshCw style={{ width: 13, height: 13 }} />
+          </button>
+        )}
+      </div>
 
       {/* Encabezado + botón */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>

@@ -3,7 +3,7 @@
 ConvoTracker es una aplicación web profesional para rastrear convocatorias nacionales e internacionales orientadas a emprendimiento, proyectos de investigación, innovación y transferencia tecnológica.
 
 **Repositorio:** [github.com/julian8811/convotracker](https://github.com/julian8811/convotracker) · **Demo (GitHub Pages):** [julian8811.github.io/convotracker](https://julian8811.github.io/convotracker/)  
-Para que la demo en línea tenga datos y scraping, despliega el backend en [Render](https://render.com) y configura el secret `VITE_API_URL` (ver [DEPLOY.md](DEPLOY.md)).
+Para que el **scraping funcione en la demo**, despliega el backend en [Render](https://render.com) y configura el secret `VITE_API_URL`. Guía breve: **[COMO_ACTIVAR_SCRAPING_ONLINE.md](COMO_ACTIVAR_SCRAPING_ONLINE.md)** · Detalle técnico: [DEPLOY.md](DEPLOY.md).
 
 ### Ejecutar en local (app completa)
 
