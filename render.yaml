@@ -1,6 +1,5 @@
-# Render Blueprint: backend ConvoTracker
-# Conectar este repo y crear servicio desde Dashboard o con render-cli.
-# Documentación: https://render.com/docs/blueprint-spec
+# Render: backend ConvoTracker
+# Se ejecuta todo desde la raíz del repo (sin Root Directory) para evitar errores de requirements.txt
 
 services:
   - type: web
@@ -8,15 +7,10 @@ services:
     runtime: python
     region: oregon
 
-    # Raíz del backend
-    rootDir: backend
-
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    # Sin rootDir: build y start usan "cd backend" para que funcione siempre
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
     envVars:
       - key: PYTHON_VERSION
-        value: "3.11.2"
-      # Opcional: añadir orígenes CORS si el front está en otro dominio
-      # - key: CORS_ORIGINS_EXTRA
-      #   value: https://tu-front.onrender.com
+        value: "3.11.8"

@@ -9,22 +9,18 @@ Para que **Ejecutar Scraping** funcione en la demo en línea (sin usar tu PC), e
 1. Entra en **https://render.com** e inicia sesión (o crea cuenta con GitHub).
 2. Pulsa **New** → **Web Service**.
 3. Conecta el repositorio **julian8811/convotracker** si aún no está conectado.
-4. Configura el servicio así:
+4. Configura el servicio así (**recomendado: dejar Root Directory vacío**):
 
    | Campo | Valor |
    |-------|--------|
    | **Name** | `convotracker-api` (o el que quieras) |
-   | **Root Directory** | `backend` ← **Importante:** debe ser exactamente `backend` para que encuentre `requirements.txt` |
+   | **Root Directory** | *(déjalo vacío)* |
    | **Runtime** | Python 3 |
-   | **Build Command** | `pip install -r requirements.txt` |
-   | **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+   | **Build Command** | `cd backend && pip install -r requirements.txt` |
+   | **Start Command** | `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
 
-   **Si ya creaste el servicio y falla con "No such file or directory: requirements.txt":**  
-   En Render → tu servicio → **Settings** → **Build & Deploy** → en **Root Directory** escribe `backend` y guarda. Luego **Manual Deploy** → **Deploy latest commit**.
-
-   **Alternativa (sin usar Root Directory):** deja **Root Directory** vacío y usa estos comandos:
-   - **Build Command:** `cd backend && pip install -r requirements.txt`
-   - **Start Command:** `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   **Si el deploy falla** (por ejemplo "requirements.txt: No such file or directory"):  
+   En Render → tu servicio → **Settings** → **Build & Deploy** → asegúrate de que **Root Directory** esté **vacío** y que **Build Command** y **Start Command** sean exactamente los de la tabla. Guarda y haz **Manual Deploy** → **Deploy latest commit**.
 
 5. Pulsa **Create Web Service** (o **Save** si estabas editando). Render construirá y desplegará el backend.
 6. Cuando termine, copia la **URL del servicio** (ej. `https://convotracker-api.onrender.com`). No incluyas barra final.
