@@ -43,10 +43,13 @@ export default function ScrapingPage() {
     }
     try {
       const res = await triggerScraping();
-      setResult({ type: 'success', message: `Scraping completado: ${res.result?.new ?? 0} nuevas convocatorias, ${res.result?.updated ?? 0} actualizadas.` });
+      const message = res?.message || (res?.result != null
+        ? `Scraping completado: ${res.result?.new ?? 0} nuevas, ${res.result?.updated ?? 0} actualizadas.`
+        : 'Scraping iniciado.');
+      setResult({ type: 'success', message });
       await fetchData();
     } catch (e) {
-      setResult({ type: 'error', message: `Error: ${e?.response?.data?.detail || e?.message || 'error desconocido'}.` });
+      setResult({ type: 'error', message: `Error: ${e?.response?.data?.detail || e?.message || e?.code || 'error de red'}.` });
     }
     setRunning(false);
   };

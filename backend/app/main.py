@@ -1,6 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -86,9 +86,21 @@ async def root():
 
 
 @app.post("/api/v1/scraping/run")
-async def trigger_scraping():
-    result = await run_all_scrapers()
-    return {"message": "Scraping completado", "result": result}
+async def trigger_scraping(background_tasks: BackgroundTasks):
+    # Ejecutar en segundo plano para no superar el timeout de Render (~30 s)
+    background_tasks.add_task(_run_scrapers_background)
+    return {
+        "message": "Scraping iniciado en segundo plano. Refresca el historial en 1-2 minutos.",
+        "result": None,
+    }
+
+
+async def _run_scrapers_background():
+    try:
+        await run_all_scrapers()
+        logger.info("Scraping en segundo plano completado")
+    except Exception as e:
+        logger.exception("Error en scraping en segundo plano: %s", e)
 
 
 @app.post("/api/v1/scraping/run/{scraper_name}")
