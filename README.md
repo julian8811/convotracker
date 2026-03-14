@@ -22,8 +22,8 @@ Para que el **scraping funcione en la demo**, despliega el backend en [Render](h
 
 ### En GitHub
 
-- La **demo** (solo frontend) está en **https://julian8811.github.io/convotracker/**.
-- Cada `git push` a `main` vuelve a desplegar la demo con GitHub Actions.
+- La **demo** (frontend) está en **https://julian8811.github.io/convotracker/**.
+- Cada push a `main` vuelve a desplegar la demo automáticamente (GitHub Actions).
 - El **backend** no se ejecuta en GitHub Pages; para scraping y datos en vivo hay que usar la app en local (pasos de arriba).
 
 ## Descripción Funcional
