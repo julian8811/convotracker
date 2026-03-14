@@ -2,7 +2,8 @@
 
 ConvoTracker es una aplicación web profesional para rastrear convocatorias nacionales e internacionales orientadas a emprendimiento, proyectos de investigación, innovación y transferencia tecnológica.
 
-**Repositorio:** [github.com/julian8811/convotracker](https://github.com/julian8811/convotracker) · **Demo (GitHub Pages):** [julian8811.github.io/convotracker](https://julian8811.github.io/convotracker/) *(frontend; el backend debe ejecutarse en local para datos en vivo)*
+**Repositorio:** [github.com/julian8811/convotracker](https://github.com/julian8811/convotracker) · **Demo (GitHub Pages):** [julian8811.github.io/convotracker](https://julian8811.github.io/convotracker/)  
+Para que la demo en línea tenga datos y scraping, despliega el backend en [Render](https://render.com) y configura el secret `VITE_API_URL` (ver [DEPLOY.md](DEPLOY.md)).
 
 ### Ejecutar en local (app completa)
 
@@ -10,7 +11,7 @@ ConvoTracker es una aplicación web profesional para rastrear convocatorias naci
    Debe aparecer: `Backend en http://localhost:8000`, `ConvoTracker v1.0.0 started`, `Scheduler started`.  
    Déjalo abierto.
 
-2. **Terminal 2 – Frontend:** ejecuta `run-frontend.bat` (o `.\run-frontend.ps1`).  
+2. **Terminal 2 – Frontend:** desde la carpeta `frontend` ejecuta `npm run dev` (o desde la raíz: `cd frontend && npm run dev`).  
    Debe aparecer: `Local: http://localhost:5173/`.  
    Déjalo abierto.
 
