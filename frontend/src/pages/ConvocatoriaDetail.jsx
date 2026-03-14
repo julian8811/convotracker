@@ -54,12 +54,24 @@ export default function ConvocatoriaDetail() {
     return ensureAbsoluteUrl(t) || (t.startsWith('http') ? t : `https://${t.replace(/^\/+/, '')}`);
   };
 
+  /** Extrae el dominio para mostrar "Alojada en: minciencias.gov.co" */
+  const getHostLabel = (url) => {
+    if (!url) return null;
+    try {
+      const u = new URL(url);
+      return u.hostname.replace(/^www\./, '');
+    } catch {
+      return url;
+    }
+  };
+
   const urlFuente   = getUrl(conv.url_fuente ?? conv.urlFuente);
   const urlTerminos = getUrl(conv.url_terminos ?? conv.urlTerminos);
   const estado      = ESTADO[conv.estado] || ESTADO.cerrada;
+  const hostLabel   = getHostLabel(urlFuente);
 
   return (
-    <div style={{ maxWidth: 820, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="conv-detail-page" style={{ maxWidth: 820, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20, padding: '0 16px' }}>
 
       {/* Back */}
       <Link to="/convocatorias" style={{
@@ -73,7 +85,7 @@ export default function ConvocatoriaDetail() {
       </Link>
 
       {/* Main card */}
-      <div className="card" style={{ padding: '28px 32px' }}>
+      <div className="card" style={{ padding: 'clamp(16px, 4vw, 28px) clamp(16px, 4vw, 32px)' }}>
 
         {/* Estado + Tipo badges */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
@@ -97,9 +109,49 @@ export default function ConvocatoriaDetail() {
         </div>
 
         {/* Título */}
-        <h1 style={{ margin: '0 0 28px', fontSize: 'clamp(20px,3vw,28px)', fontWeight: 800, color: '#f9fafb', letterSpacing: '-0.03em', lineHeight: 1.25 }}>
+        <h1 style={{ margin: '0 0 20px', fontSize: 'clamp(18px, 3vw, 28px)', fontWeight: 800, color: '#f9fafb', letterSpacing: '-0.03em', lineHeight: 1.25 }}>
           {conv.titulo}
         </h1>
+
+        {/* Bloque visible: Ver convocatoria original + URL exacta (siempre arriba) */}
+        <div id="ver-convocatoria-original" style={{
+          marginBottom: 28,
+          padding: '16px 18px',
+          borderRadius: 14,
+          background: 'rgba(79,70,229,0.08)',
+          border: '1px solid rgba(79,70,229,0.25)',
+        }}>
+          <p className="panel-title" style={{ marginBottom: 6, fontSize: 10 }}>
+            {hostLabel ? `Convocatoria alojada en: ${hostLabel}` : 'Fuente oficial'}
+          </p>
+          {urlFuente ? (
+            <>
+              <p style={{ margin: '0 0 12px', fontSize: 12, color: '#94a3b8', wordBreak: 'break-all', lineHeight: 1.5 }}>
+                {urlFuente}
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+                <a href={urlFuente} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
+                  <ExternalLink style={{ width: 15, height: 15 }} />
+                  Ver convocatoria original
+                </a>
+                {urlTerminos && urlTerminos !== urlFuente && (
+                  <a href={urlTerminos} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ textDecoration: 'none' }}>
+                    <FileText style={{ width: 14, height: 14 }} />
+                    Términos de referencia
+                  </a>
+                )}
+                <button onClick={() => downloadConvocatoriaPdf(conv.id)} className="btn-secondary">
+                  <Download style={{ width: 14, height: 14 }} />
+                  Descargar PDF
+                </button>
+              </div>
+            </>
+          ) : (
+            <p style={{ margin: 0, fontSize: 12, color: '#6b7280', fontStyle: 'italic' }}>
+              No hay URL de fuente disponible para esta convocatoria.
+            </p>
+          )}
+        </div>
 
         {/* Info grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 28 }}>
@@ -138,31 +190,6 @@ export default function ConvocatoriaDetail() {
           </div>
         )}
 
-        {/* Acciones */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 32, paddingTop: 24, borderTop: '1px solid rgba(148,163,184,0.1)' }}>
-          {urlFuente && (
-            <a href={urlFuente} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
-              <ExternalLink style={{ width: 15, height: 15 }} />
-              Ver convocatoria original
-            </a>
-          )}
-          {urlTerminos && urlTerminos !== urlFuente && (
-            <a href={urlTerminos} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ textDecoration: 'none' }}>
-              <FileText style={{ width: 14, height: 14 }} />
-              Términos de referencia
-            </a>
-          )}
-          <button onClick={() => downloadConvocatoriaPdf(conv.id)} className="btn-secondary">
-            <Download style={{ width: 14, height: 14 }} />
-            Descargar PDF
-          </button>
-        </div>
-
-        {!urlFuente && (
-          <p style={{ marginTop: 12, fontSize: 11, color: '#4b5563', fontStyle: 'italic' }}>
-            No hay URL de fuente disponible para esta convocatoria.
-          </p>
-        )}
       </div>
 
       <p style={{ fontSize: 11, color: '#374151', textAlign: 'center', letterSpacing: '0.04em' }}>

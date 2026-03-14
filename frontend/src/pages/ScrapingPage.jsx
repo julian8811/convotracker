@@ -67,7 +67,7 @@ export default function ScrapingPage() {
   };
 
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="mx-auto flex flex-col gap-4 sm:gap-6" style={{ maxWidth: 860, padding: '0 12px' }}>
 
       {/* Estado del backend (local y demo) */}
       <div style={{

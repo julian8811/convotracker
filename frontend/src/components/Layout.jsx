@@ -181,7 +181,7 @@ export default function Layout({ children }) {
           </div>
         </header>
 
-        <main style={{ padding: '28px 28px 48px', minHeight: 'calc(100vh - 52px)' }}>
+        <main className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10 min-h-[calc(100vh-52px)] safe-area-padding">
           {children}
         </main>
       </div>

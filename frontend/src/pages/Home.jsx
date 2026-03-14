@@ -29,14 +29,14 @@ export default function Home() {
   ] : [];
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28 }}>
+    <div className="mx-auto flex flex-col gap-6 sm:gap-8 lg:gap-10" style={{ maxWidth: 1280, padding: '0 16px' }}>
 
-      {/* ── Hero ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.65fr) minmax(0,1fr)', gap: 20, alignItems: 'center' }}>
+      {/* ── Hero (responsive: 1 col móvil, 2 cols desktop) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.65fr_1fr] gap-5 lg:gap-8 items-center">
 
         {/* Hero card izquierda */}
-        <div style={{
-          position: 'relative', borderRadius: 22, padding: '32px 32px 28px',
+        <div className="order-2 lg:order-1" style={{
+          position: 'relative', borderRadius: 22, padding: 'clamp(20px, 4vw, 32px) clamp(20px, 4vw, 32px) clamp(20px, 4vw, 28px)',
           border: '1px solid rgba(148,163,184,0.28)',
           background: `
             radial-gradient(circle at 0% 0%, rgba(56,189,248,0.14), transparent 55%),
@@ -115,8 +115,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Visualización derecha */}
-        <div style={{
+        {/* Visualización derecha (en móvil arriba) */}
+        <div className="order-1 lg:order-2" style={{
           position: 'relative', borderRadius: 22, padding: '20px 18px',
           border: '1px solid rgba(148,163,184,0.38)',
           background: `

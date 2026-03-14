@@ -1,6 +1,12 @@
 """
 Seed script — base de datos de convocatorias con URLs reales verificadas.
-Todas las url_fuente apuntan a la página de convocatorias/oportunidades de cada institución.
+
+Regla de mapeo:
+- url_fuente: debe ser la URL real y verificada de la página donde está publicada la
+  convocatoria (portal de convocatorias de la entidad, no URL genérica inventada).
+- Entidades y títulos deben corresponder a programas reales de cada institución.
+- Ejemplos verificados: minciencias.gov.co/convocatorias, fondoemprender.com,
+  innpulsacolombia.com, grants.gov, ec.europa.eu, etc.
 """
 import asyncio
 from datetime import datetime, timedelta

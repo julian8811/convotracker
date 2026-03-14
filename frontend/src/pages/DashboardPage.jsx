@@ -44,7 +44,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="mx-auto flex flex-col gap-5 sm:gap-6" style={{ maxWidth: 1200, padding: '0 12px' }}>
 
       {/* Header */}
       <div>

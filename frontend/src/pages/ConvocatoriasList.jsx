@@ -56,7 +56,7 @@ export default function ConvocatoriasList() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="mx-auto flex flex-col gap-4 sm:gap-6" style={{ maxWidth: 900, padding: '0 12px' }}>
 
       {/* Encabezado */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
