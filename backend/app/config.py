@@ -8,7 +8,10 @@ class Settings(BaseSettings):
     SCRAPING_INTERVAL_HOURS: int = 24
     SCRAPING_ENABLED: bool = True
     LOG_LEVEL: str = "INFO"
-    CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"]
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173",
+        "https://julian8811.github.io"
+    ]
     PDF_OUTPUT_DIR: str = str(Path(__file__).parent.parent / "reports")
     
     class Config:
