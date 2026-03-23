@@ -1,6 +1,7 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, extract
+from sqlalchemy import select, func, extract, update
 from collections import defaultdict
 
 from app.database import get_db
@@ -10,34 +11,73 @@ from app.schemas.convocatoria import DashboardStats, ConvocatoriaResponse
 router = APIRouter(prefix="/api/v1/dashboard", tags=["dashboard"])
 
 
+def calcular_estado(fecha_cierre: datetime | None) -> str | None:
+    """
+    Calcula el estado de una convocatoria basado en fecha_cierre.
+    Coincide con la lógica del schema ConvocatoriaResponse.
+    """
+    if not fecha_cierre:
+        return None
+    
+    ahora = datetime.now(timezone.utc)
+    # Remover timezone para comparar
+    if fecha_cierre.tzinfo:
+        fecha_cierre = fecha_cierre.replace(tzinfo=None)
+    ahora = ahora.replace(tzinfo=None)
+    
+    dias = (fecha_cierre - ahora).days
+    
+    if dias < 0:
+        return "cerrada"
+    elif dias <= 7:
+        return "por_vencer"
+    else:
+        return "activa"
+
+
 @router.get("/stats", response_model=DashboardStats)
 async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
-    base = select(Convocatoria).where(Convocatoria.activa == True)
-
-    total_result = await db.execute(select(func.count()).select_from(base.subquery()))
-    total = total_result.scalar() or 0
-
-    abiertas_r = await db.execute(
-        select(func.count()).select_from(
-            base.where(Convocatoria.estado == "abierta").subquery()
-        )
+    """
+    Obtiene estadísticas del dashboard.
+    
+    Usa lógica basada en fecha_cierre para calcular estados,
+    consistente con el schema ConvocatoriaResponse.
+    """
+    # Primero, contar por estado usando fecha_cierre
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
+    
+    # Query para obtener todas las convocatorias con fecha_cierre
+    result = await db.execute(
+        select(Convocatoria.fecha_cierre)
+        .where(Convocatoria.activa == True)
     )
-    abiertas = abiertas_r.scalar() or 0
-
-    cerradas_r = await db.execute(
-        select(func.count()).select_from(
-            base.where(Convocatoria.estado == "cerrada").subquery()
-        )
-    )
-    cerradas = cerradas_r.scalar() or 0
-
-    proximas_r = await db.execute(
-        select(func.count()).select_from(
-            base.where(Convocatoria.estado == "próxima").subquery()
-        )
-    )
-    proximas = proximas_r.scalar() or 0
-
+    fechas = result.scalars().all()
+    
+    # Calcular estados basados en fecha
+    conteo_estados = {"activa": 0, "por_vencer": 0, "cerrada": 0}
+    sin_fecha = 0
+    
+    for fecha in fechas:
+        if fecha:
+            if fecha.tzinfo:
+                fecha = fecha.replace(tzinfo=None)
+            dias = (fecha - now).days
+            if dias < 0:
+                conteo_estados["cerrada"] += 1
+            elif dias <= 7:
+                conteo_estados["por_vencer"] += 1
+            else:
+                conteo_estados["activa"] += 1
+        else:
+            sin_fecha += 1
+    
+    # Total y abiertas (consideramos activas + por_vencer como "abiertas" para el usuario)
+    total = len(fechas) + sin_fecha
+    abiertas = conteo_estados["activa"] + conteo_estados["por_vencer"]
+    cerradas = conteo_estados["cerrada"]
+    por_vencer = conteo_estados["por_vencer"]
+    
+    # Stats por país
     pais_r = await db.execute(
         select(Convocatoria.pais, func.count())
         .where(Convocatoria.activa == True)
@@ -45,6 +85,7 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     )
     por_pais = {row[0]: row[1] for row in pais_r.all()}
 
+    # Stats por tipo
     tipo_r = await db.execute(
         select(Convocatoria.tipo, func.count())
         .where(Convocatoria.activa == True)
@@ -52,6 +93,7 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     )
     por_tipo = {row[0]: row[1] for row in tipo_r.all()}
 
+    # Stats por sector
     sector_r = await db.execute(
         select(Convocatoria.sector, func.count())
         .where(Convocatoria.activa == True, Convocatoria.sector.isnot(None))
@@ -59,6 +101,7 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     )
     por_sector = {row[0]: row[1] for row in sector_r.all()}
 
+    # Stats por entidad
     entidad_r = await db.execute(
         select(Convocatoria.entidad, func.count())
         .where(Convocatoria.activa == True)
@@ -68,6 +111,7 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     )
     por_entidad = {row[0]: row[1] for row in entidad_r.all()}
 
+    # Stats por mes
     mes_r = await db.execute(
         select(
             extract("year", Convocatoria.created_at),
@@ -90,6 +134,7 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
             key = f"{int(row[0])}-{int(row[1]):02d}"
             por_mes[key] = row[2]
 
+    # Monto promedio
     avg_r = await db.execute(
         select(func.avg(Convocatoria.monto_maximo)).where(
             Convocatoria.activa == True, Convocatoria.monto_maximo.isnot(None)
@@ -97,8 +142,12 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
     )
     monto_promedio = avg_r.scalar()
 
+    # Últimas agregadas
     ultimas_r = await db.execute(
-        base.order_by(Convocatoria.created_at.desc()).limit(5)
+        select(Convocatoria)
+        .where(Convocatoria.activa == True)
+        .order_by(Convocatoria.created_at.desc())
+        .limit(5)
     )
     ultimas = ultimas_r.scalars().all()
 
@@ -106,7 +155,7 @@ async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
         total_convocatorias=total,
         abiertas=abiertas,
         cerradas=cerradas,
-        proximas=proximas,
+        por_vencer=por_vencer,
         por_pais=por_pais,
         por_tipo=por_tipo,
         por_sector=por_sector,

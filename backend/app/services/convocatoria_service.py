@@ -34,18 +34,37 @@ async def upsert_convocatoria(db: AsyncSession, data: dict) -> tuple[Convocatori
     return conv, True
 
 
-async def deactivate_expired(db: AsyncSession):
-    from datetime import datetime
+async def deactivate_expired(db: AsyncSession) -> int:
+    """
+    Desactiva convocatorias vencidas (fecha_cierre pasada).
+    Retorna el número de convocatorias desactivadas.
+    """
+    from datetime import datetime, timezone
+    
+    ahora = datetime.now(timezone.utc)
+    # Buscar convocatorias activas cuya fecha_cierre ya pasó
     result = await db.execute(
         select(Convocatoria).where(
             Convocatoria.activa == True,
             Convocatoria.fecha_cierre.isnot(None),
-            Convocatoria.fecha_cierre < datetime.utcnow(),
+            Convocatoria.estado != "cerrada",  # No reprogramar si ya está cerrada
         )
     )
     expired = result.scalars().all()
+    
+    count = 0
     for conv in expired:
-        conv.estado = "cerrada"
-    if expired:
+        # Verificar si realmente está vencida
+        fecha = conv.fecha_cierre
+        if fecha.tzinfo:
+            fecha = fecha.replace(tzinfo=None)
+        ahora_naive = ahora.replace(tzinfo=None)
+        
+        if fecha < ahora_naive:
+            conv.estado = "cerrada"
+            count += 1
+    
+    if count > 0:
         await db.commit()
-    return len(expired)
+    
+    return count

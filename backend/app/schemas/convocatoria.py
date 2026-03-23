@@ -159,7 +159,7 @@ class DashboardStats(BaseModel):
     total_convocatorias: int
     abiertas: int
     cerradas: int
-    proximas: int
+    por_vencer: int
     por_pais: dict
     por_tipo: dict
     por_sector: dict
