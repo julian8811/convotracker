@@ -57,16 +57,16 @@ export default function DashboardPage() {
       </div>
 
       {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }} className="kpi-grid">
         {kpis.map((k, i) => (
-          <div key={i} className="card" style={{ padding: '18px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span className="panel-title">{k.label}</span>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: k.bg, border: `1px solid ${k.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <k.icon style={{ width: 17, height: 17, color: k.color }} />
+          <div key={i} className="card kpi-card" style={{ padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <span className="panel-title" style={{ fontSize: 10 }}>{k.label}</span>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: k.bg, border: `1px solid ${k.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <k.icon style={{ width: 15, height: 15, color: k.color }} />
               </div>
             </div>
-            <p style={{ margin: 0, fontSize: 28, fontWeight: 800, color: '#f9fafb', letterSpacing: '-0.03em' }}>
+            <p style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#f9fafb', letterSpacing: '-0.03em' }}>
               {typeof k.value === 'number' ? k.value.toLocaleString() : k.value}
             </p>
           </div>
@@ -74,7 +74,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Gráficos fila 1 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }} className="dashboard-grid">
         <ChartPanel title="Por país (top 10)" Icon={Globe}>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={paisData} layout="vertical" margin={{ left: 8 }}>

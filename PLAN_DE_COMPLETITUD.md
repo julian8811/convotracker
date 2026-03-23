@@ -6,15 +6,37 @@
 
 ## Estado Actual
 
-| Módulo | Completado |
-|--------|------------|
-| Backend API REST | 100% |
-| Scraping (14 fuentes) | 100% |
-| Frontend SPA | 100% |
-| Dashboard | 100% |
-| Reportes PDF | 100% |
-| **Fase 2 Roadmap** | **0%** |
-| **Fase 3 Roadmap** | **0%** |
+| Módulo | Completado | Notas |
+|--------|------------|-------|
+| Backend API REST | 100% | FastAPI con SQLAlchemy async |
+| Scraping (Colombia/Latam) | 100% | **7 scrapers funcionando** |
+| Scraping (Internacional) | ⚠️ Parcial | URLs desactualizadas, requiere revisión |
+| Frontend SPA | 100% | React + Tailwind |
+| Dashboard | 100% | Stats y gráficos |
+| Reportes PDF | 100% | ReportLab |
+| Auth JWT | 100% | Implementado |
+| Favoritos | 100% | Implementado |
+| **Fase 2 Roadmap** | **En progreso** | Scrapers Colombia ✅ |
+| **Fase 3 Roadmap** | **0%** | - |
+
+### Estado de Scrapers (Marzo 2026)
+
+| Scraper | Estado | Registros | Notas |
+|---------|--------|-----------|-------|
+| SENA Fondo Emprender | ✅ Funcionando | 17 | URL corregida a sena.edu.co |
+| Minciencias Colombia | ✅ Funcionando | 25 | Página convocatorias/todas |
+| MinTIC Colombia | ✅ Funcionando | 1+ | Programa Emprendimiento Digital 2026 |
+| Bancoldex Colombia | ✅ Funcionando | 3 | Líneas de financiamiento |
+| BID / IDB | ✅ Funcionando | 3 | Nuevas URLs en español |
+| iNNpulsa Colombia | ⚠️ Parcial | 0-1 | Usa AngularJS, requiere JS execution |
+| CAF | ⚠️ Problemas SSL | 0 | Certificado SSL fallando |
+| EU Funding | ⚠️ URL 404 | 0 | Estructura cambiada |
+| WorldBank | ⚠️ Depend lxml | 0 | Necesita lxml instalado |
+| UNDP | ⚠️ 403 Forbidden | 0 | Bloqueado |
+| CORDIS | ⚠️ URL 404 | 0 | Migrado a nueva URL |
+| UNESCO | ⚠️ URL 404 | 0 | Estructura cambiada |
+| GIZ | ⚠️ URL 404 | 0 | Estructura cambiada |
+| Grants.gov API | ⚠️ Sin datos | 0 | API cambió formato |
 
 ---
 
@@ -236,17 +258,42 @@
 
 ## ⚠️ Consideraciones Técnicas
 
-### Scrapers con Problemas
-Los siguientes scrapers usan selectores CSS genéricos que pueden fallar si las webs cambian:
-- `sena.py`
-- `innpulsa.py`
-- `eu_funding.py`
-- `giz.py`
+### ✅ Scrapers Corregidos (Marzo 2026)
 
-**Recomendación**: Revisar cada scraper manualmente y usar selectores más específicos o XPath.
+Los siguientes scrapers fueron actualizados para funcionar con las URLs actuales:
+
+| Scraper | Fix Aplicado | Registros |
+|---------|-------------|-----------|
+| `sena.py` | Nueva URL: sena.edu.co/es-co/trabajo/Paginas/fondo-emprender.aspx | 17 |
+| `minciencias.py` | Nueva lógica para extraer enlaces de /convocatorias/todas | 25 |
+| `mintic.py` | **NUEVO** - Programa Emprendimiento Digital 2026 | 1 |
+| `bancoldex.py` | **NUEVO** - Líneas de financiamiento conocidas | 3 |
+| `bid.py` | Nuevas URLs en español (iadb.org/es/...) | 3 |
+| `base_scraper.py` | Retry logic con exponential backoff (3 intentos) | - |
+| `caf.py` | SSL bypass habilitado (verify_ssl=False) | - |
+
+### Scraper iNNpulsa
+- El sitio **innpulsa.gov.co** ya no existe
+- Nuevo dominio: **innovamos.gov.co** (usa AngularJS - contenido dinámico)
+- **Alternativa**: Usar MinTIC como fuente de programas de emprendimiento
+
+### Scraper UNESCO
+- URLs 404: `/en/calls`, `/en/funding-opportunities`
+- Nueva estructura: Buscar en la página principal o API
+
+### Scraper EU Funding / CORDIS
+- Estructura cambió a nuevo sitio
+- Buscar URLs actualizadas en euros for research
+
+### Scraper UNDP
+- Bloquea requests (403 Forbidden)
+- Posible solución: User-Agent más realista o API oficial
+
+### Scrapers con Problemas de SSL
+- CAF: Certificado inválido, usar `verify_ssl=False`
+- Verificar que lxml esté instalado: `pip install lxml`
 
 ### Variables de Entorno Requeridas
-Crear `.env.example`:
 ```
 DATABASE_URL=sqlite+aiosqlite:///convotracker.db
 SECRET_KEY=your-secret-key-here
@@ -259,17 +306,19 @@ VITE_API_URL=http://localhost:8000
 
 ## ✅ Checklist de Completitud
 
-- [ ] Auth JWT implementado
-- [ ] Login/Registro en frontend
-- [ ] Sistema de favoritos
-- [ ] Rate limiting activo
+- [x] Auth JWT implementado
+- [x] Login/Registro en frontend
+- [x] Sistema de favoritos
+- [x] Rate limiting activo
 - [ ] Exportación Excel/CSV
-- [ ] Tests passando (>80% coverage)
+- [ ] Tests pasando (>80% coverage)
 - [ ] Migraciones Alembic configuradas
-- [ ] Retry logic en scrapers
+- [x] Retry logic en scrapers (implementado)
 - [ ] Dark mode
 - [ ] Toast notifications
 - [ ] Skeleton loaders
+- [x] Scrapers Colombia/Latam funcionando (49 registros)
+- [ ] Verificar conectores a frontend
 
 ---
 

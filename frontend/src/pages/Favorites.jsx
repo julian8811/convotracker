@@ -1,15 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Star, ExternalLink, Calendar, MapPin, DollarSign } from 'lucide-react';
-import { getFavorites, removeFavorite } from '../services/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { Star, ExternalLink, Clock, MapPin, DollarSign, Trash2, LogIn, Search } from 'lucide-react';
+import { getFavorites, removeFavorite, getToken } from '../services/api';
 
 export default function Favorites() {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
+  
+  const isLoggedIn = !!getToken();
 
   useEffect(() => {
-    loadFavorites();
+    if (isLoggedIn) {
+      loadFavorites();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const loadFavorites = async () => {
@@ -34,93 +41,196 @@ export default function Favorites() {
     }
   };
 
-  const getEstadoColor = (estado) => {
-    const colors = {
-      'abierta': 'bg-green-100 text-green-800',
-      'cerrada': 'bg-red-100 text-red-800',
-      'próxima': 'bg-blue-100 text-blue-800',
-      'en_evaluación': 'bg-yellow-100 text-yellow-800',
-    };
-    return colors[estado] || 'bg-gray-100 text-gray-800';
+  const formatDiasRestantes = (fechaCierre) => {
+    if (!fechaCierre) return null;
+    const cierre = new Date(fechaCierre);
+    const ahora = new Date();
+    const dias = Math.ceil((cierre - ahora) / (1000 * 60 * 60 * 24));
+    if (dias < 0) return { text: `Venció hace ${Math.abs(dias)} días`, urgent: false, vencida: true };
+    if (dias === 0) return { text: 'Vence hoy', urgent: true, vencida: false };
+    if (dias === 1) return { text: 'Vence mañana', urgent: true, vencida: false };
+    if (dias <= 7) return { text: `${dias} días restantes`, urgent: true, vencida: false };
+    return { text: `${dias} días restantes`, urgent: false, vencida: false };
   };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="mx-auto flex flex-col gap-6" style={{ maxWidth: 600, padding: '0 12px' }}>
+        <div style={{ textAlign: 'center', padding: '60px 0' }}>
+          <div style={{
+            width: 80, height: 80, borderRadius: '50%', margin: '0 auto 20px',
+            background: 'rgba(234,179,8,0.12)',
+            border: '1px solid rgba(234,179,8,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Star style={{ width: 36, height: 36, color: '#eab308' }} />
+          </div>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#f9fafb', marginBottom: 10 }}>
+            Inicia sesión para ver tus favoritos
+          </h2>
+          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24, lineHeight: 1.6 }}>
+            Guarda las convocatorias que te interesen y accede a ellas rápidamente desde cualquier dispositivo.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/login" className="btn-primary" style={{ textDecoration: 'none' }}>
+              <LogIn style={{ width: 16, height: 16 }} />
+              Iniciar sesión
+            </Link>
+            <Link to="/convocatorias" className="btn-secondary" style={{ textDecoration: 'none' }}>
+              <Search style={{ width: 16, height: 16 }} />
+              Ver convocatorias
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
+        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '2px solid rgba(148,163,184,0.15)', borderTopColor: '#4f46e5', animation: 'spin 0.8s linear infinite' }} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Mis Favoritos</h1>
-        <span className="text-sm text-gray-500">{favorites.length} convocatorias</span>
+    <div className="mx-auto flex flex-col gap-5" style={{ maxWidth: 900, padding: '0 12px' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div className="eyebrow" style={{ marginBottom: 8, width: 'fit-content' }}>
+            <span className="eyebrow-dot" />
+            Mis Favoritos
+          </div>
+          <p style={{ fontSize: 12, color: '#6b7280' }}>
+            {favorites.length} {favorites.length === 1 ? 'convocatoria guardada' : 'convocatorias guardadas'}
+          </p>
+        </div>
       </div>
 
+      {/* Error */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
+        <div className="card" style={{ padding: '14px 18px', border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)' }}>
+          <p style={{ fontSize: 13, color: '#f87171', margin: 0 }}>{error}</p>
         </div>
       )}
 
-      {favorites.length === 0 ? (
-        <div className="text-center py-12">
-          <Star className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Sin favoritos</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Agrega convocatorias a favoritos desde la lista o detalle.
+      {/* Empty state */}
+      {favorites.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div style={{
+            width: 80, height: 80, borderRadius: '50%', margin: '0 auto 20px',
+            background: 'rgba(148,163,184,0.08)',
+            border: '1px solid rgba(148,163,184,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Star style={{ width: 36, height: 36, color: '#6b7280' }} />
+          </div>
+          <h2 style={{ fontSize: 18, fontWeight: 600, color: '#f9fafb', marginBottom: 8 }}>
+            No tienes favoritos aún
+          </h2>
+          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 24 }}>
+            Agrega convocatorias a favoritos desde la lista o el detalle.
           </p>
-          <Link
-            to="/convocatorias"
-            className="mt-6 inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Ver Convocatorias
+          <Link to="/convocatorias" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex' }}>
+            <Search style={{ width: 16, height: 16 }} />
+            Explorar convocatorias
           </Link>
         </div>
-      ) : (
-        <div className="grid gap-4">
-          {favorites.map((fav) => (
-            <Link
-              key={fav.id}
-              to={`/convocatorias/${fav.convocatoria_id}`}
-              className="block p-4 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-                      {fav.titulo}
-                    </h3>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">{fav.entidad}</p>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {fav.pais}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getEstadoColor(fav.estado)}`}>
-                      {fav.estado.charAt(0).toUpperCase() + fav.estado.slice(1)}
-                    </span>
-                    {fav.fecha_cierre && (
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        Cierre: {new Date(fav.fecha_cierre).toLocaleDateString('es-CO')}
+      )}
+
+      {/* Lista de favoritos */}
+      {favorites.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {favorites.map((fav) => {
+            const diasInfo = formatDiasRestantes(fav.fecha_cierre);
+            
+            return (
+              <Link
+                key={fav.id}
+                to={`/convocatorias/${fav.convocatoria_id}`}
+                className="card"
+                style={{
+                  padding: '16px 18px',
+                  textDecoration: 'none',
+                  display: 'block',
+                  borderLeft: diasInfo?.urgent && !diasInfo?.vencida ? '3px solid #facc15' :
+                            diasInfo?.vencida ? '3px solid #f87171' : '3px solid transparent',
+                }}
+              >
+                <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {/* Badges */}
+                    <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                        padding: '2px 8px', borderRadius: 999,
+                        fontSize: 10, fontWeight: 600, textTransform: 'uppercase',
+                        background: fav.estado === 'abierta' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                        color: fav.estado === 'abierta' ? '#4ade80' : '#f87171',
+                        border: `1px solid ${fav.estado === 'abierta' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                      }}>
+                        {fav.estado}
                       </span>
-                    )}
+                      {diasInfo && !diasInfo.vencida && (
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 4,
+                          padding: '2px 8px', borderRadius: 999,
+                          fontSize: 10, fontWeight: 600,
+                          background: diasInfo.urgent ? 'rgba(250,204,21,0.12)' : 'rgba(34,197,94,0.1)',
+                          color: diasInfo.urgent ? '#facc15' : '#4ade80',
+                        }}>
+                          <Clock style={{ width: 10, height: 10 }} />
+                          {diasInfo.text}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Título */}
+                    <p style={{
+                      margin: '0 0 6px', fontSize: 14, fontWeight: 600, color: '#f9fafb',
+                      lineHeight: 1.4,
+                      display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                    }}>
+                      {fav.titulo}
+                    </p>
+
+                    {/* Meta */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', fontSize: 11, color: '#6b7280' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 10 }}>📍</span>
+                        {fav.entidad} · {fav.pais}
+                      </span>
+                      {fav.fecha_cierre && (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Clock style={{ width: 10, height: 10 }} />
+                          {new Date(fav.fecha_cierre).toLocaleDateString('es-CO')}
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Botón eliminar */}
+                  <button
+                    onClick={(e) => handleRemove(fav.id, e)}
+                    style={{
+                      padding: 8, borderRadius: 8, flexShrink: 0,
+                      background: 'rgba(239,68,68,0.1)',
+                      border: '1px solid rgba(239,68,68,0.25)',
+                      color: '#f87171', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                    title="Quitar de favoritos"
+                  >
+                    <Trash2 style={{ width: 14, height: 14 }} />
+                  </button>
                 </div>
-                <button
-                  onClick={(e) => handleRemove(fav.id, e)}
-                  className="p-2 text-yellow-500 hover:text-yellow-700"
-                  title="Quitar de favoritos"
-                >
-                  <Star className="w-6 h-6 fill-current" />
-                </button>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

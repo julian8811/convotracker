@@ -8,8 +8,15 @@ import ScrapingPage from './pages/ScrapingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Favorites from './pages/Favorites';
+import NotFound from './pages/NotFound';
+import ErrorPage from './pages/ErrorPage';
 
 const basename = import.meta.env.BASE_URL || '/';
+
+function ErrorBoundary({ children }) {
+  return children;
+}
+
 export default function App() {
   return (
     <Router basename={basename}>
@@ -23,6 +30,9 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/favorites" element={<Favorites />} />
+          <Route path="/404" element={<NotFound />} />
+          <Route path="/error" element={<ErrorPage />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
     </Router>

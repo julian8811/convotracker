@@ -63,25 +63,25 @@ export default function Layout({ children }) {
       >
         {/* Logo */}
         <div
-          className="flex items-center gap-3 px-5 py-5"
+          className="flex items-center gap-3 px-4 py-4"
           style={{ borderBottom: '1px solid rgba(148,163,184,0.1)' }}
         >
           <div
             style={{
-              width: 38, height: 38, borderRadius: 12,
+              width: 34, height: 34, borderRadius: 10,
               background: 'radial-gradient(circle at 30% 20%, rgba(79,70,229,0.6), rgba(6,182,212,0.3))',
               border: '1px solid rgba(148,163,184,0.4)',
               boxShadow: '0 0 0 4px rgba(79,70,229,0.2)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <Radar style={{ width: 20, height: 20, color: '#a5b4fc' }} />
+            <Radar style={{ width: 18, height: 18, color: '#a5b4fc' }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p style={{ fontSize: 15, fontWeight: 700, color: '#f9fafb', letterSpacing: '-0.02em', margin: 0 }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#f9fafb', letterSpacing: '-0.02em', margin: 0 }}>
               ConvoTracker
             </p>
-            <p style={{ fontSize: 10, color: '#6b7280', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 1 }}>
+            <p style={{ fontSize: 9, color: '#6b7280', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 1 }}>
               Vigilancia global
             </p>
           </div>
@@ -232,21 +232,21 @@ export default function Layout({ children }) {
             borderBottom: '1px solid rgba(148,163,184,0.1)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px' }}>
             <button
               onClick={() => setOpen(true)}
               className="lg:hidden"
               style={{
-                padding: '7px', borderRadius: 9,
+                padding: '8px', borderRadius: 10,
                 background: 'rgba(148,163,184,0.06)',
                 border: '1px solid rgba(148,163,184,0.18)',
                 color: '#9ca3af', cursor: 'pointer',
               }}
             >
-              <Menu style={{ width: 18, height: 18 }} />
+              <Menu style={{ width: 20, height: 20 }} />
             </button>
 
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span
                 style={{
                   width: 7, height: 7, borderRadius: '50%',
@@ -255,7 +255,7 @@ export default function Layout({ children }) {
                   flexShrink: 0,
                 }}
               />
-              <span style={{ fontSize: 12, color: '#6b7280', letterSpacing: '0.06em' }}>
+              <span style={{ fontSize: 11, color: '#6b7280', letterSpacing: '0.06em', display: 'none sm:block' }}>
                 Monitoreo activo
               </span>
             </div>

@@ -2,16 +2,18 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft, Clock, MapPin, Building2, Tag, DollarSign,
-  Download, Calendar, Globe, FileText, Users, ExternalLink
+  Download, Calendar, Globe, FileText, Users, ExternalLink,
+  AlertCircle, CheckCircle2, Timer, Award
 } from 'lucide-react';
 import { getConvocatoria, downloadConvocatoriaPdf } from '../services/api';
 import { ensureAbsoluteUrl } from '../utils/urls';
 import FavoriteButton from '../components/FavoriteButton';
 
 const ESTADO = {
-  abierta:  { bg: 'rgba(34,197,94,0.14)',  color: '#4ade80', border: 'rgba(34,197,94,0.35)' },
-  cerrada:  { bg: 'rgba(239,68,68,0.14)',  color: '#f87171', border: 'rgba(239,68,68,0.35)' },
-  'próxima':{ bg: 'rgba(249,115,22,0.14)', color: '#fb923c', border: 'rgba(249,115,22,0.35)' },
+  abierta:    { bg: 'rgba(34,197,94,0.14)',   color: '#4ade80',  border: 'rgba(34,197,94,0.35)',  label: 'Abierta' },
+  cerrada:    { bg: 'rgba(239,68,68,0.14)',   color: '#f87171',  border: 'rgba(239,68,68,0.35)', label: 'Cerrada' },
+  'próxima':  { bg: 'rgba(249,115,22,0.14)', color: '#fb923c',  border: 'rgba(249,115,22,0.35)',label: 'Próxima' },
+  por_vencer: { bg: 'rgba(234,179,8,0.15)', color: '#facc15',  border: 'rgba(234,179,8,0.4)',  label: 'Por vencer' },
 };
 
 export default function ConvocatoriaDetail() {
@@ -43,9 +45,11 @@ export default function ConvocatoriaDetail() {
     : null;
 
   const formatMonto = (min, max, moneda) => {
-    if (!max) return null;
+    if (!max && !min) return null;
     const sym = { USD: '$', EUR: '€', COP: 'COP$', GBP: '£', MXN: 'MX$', BRL: 'R$' }[moneda] || (moneda + ' ');
-    return min ? `${sym}${min.toLocaleString()} – ${sym}${max.toLocaleString()}` : `Hasta ${sym}${max.toLocaleString()}`;
+    if (max && min) return `${sym}${min.toLocaleString()} – ${sym}${max.toLocaleString()}`;
+    if (max) return `Hasta ${sym}${max.toLocaleString()}`;
+    return `Desde ${sym}${min.toLocaleString()}`;
   };
 
   const getUrl = (raw) => {
@@ -55,7 +59,6 @@ export default function ConvocatoriaDetail() {
     return ensureAbsoluteUrl(t) || (t.startsWith('http') ? t : `https://${t.replace(/^\/+/, '')}`);
   };
 
-  /** Extrae el dominio para mostrar "Alojada en: minciencias.gov.co" */
   const getHostLabel = (url) => {
     if (!url) return null;
     try {
@@ -68,8 +71,57 @@ export default function ConvocatoriaDetail() {
 
   const urlFuente   = getUrl(conv.url_fuente ?? conv.urlFuente);
   const urlTerminos = getUrl(conv.url_terminos ?? conv.urlTerminos);
-  const estado      = ESTADO[conv.estado] || ESTADO.cerrada;
-  const hostLabel   = getHostLabel(urlFuente);
+  
+  // Usar estado_calculado si está disponible, sino el estado original
+  const estadoKey = conv.estado_calculado || conv.estado || 'abierta';
+  const estado = ESTADO[estadoKey] || ESTADO.abierta;
+  const hostLabel = getHostLabel(urlFuente);
+
+  // Calcular días restantes
+  const diasRestantes = conv.dias_restantes;
+  const getDiasRestantesDisplay = () => {
+    if (diasRestantes === null || diasRestantes === undefined) return null;
+    if (diasRestantes < 0) {
+      return {
+        text: `Venció hace ${Math.abs(diasRestantes)} días`,
+        color: '#f87171',
+        bg: 'rgba(239,68,68,0.12)',
+        icon: <Clock style={{ width: 18, height: 18 }} />
+      };
+    }
+    if (diasRestantes === 0) {
+      return {
+        text: '¡Vence hoy!',
+        color: '#facc15',
+        bg: 'rgba(250,204,21,0.15)',
+        icon: <AlertCircle style={{ width: 18, height: 18 }} />
+      };
+    }
+    if (diasRestantes === 1) {
+      return {
+        text: '¡Vence mañana!',
+        color: '#fb923c',
+        bg: 'rgba(251,146,60,0.15)',
+        icon: <AlertCircle style={{ width: 18, height: 18 }} />
+      };
+    }
+    if (diasRestantes <= 7) {
+      return {
+        text: `${diasRestantes} días restantes`,
+        color: '#facc15',
+        bg: 'rgba(250,204,21,0.15)',
+        icon: <Timer style={{ width: 18, height: 18 }} />
+      };
+    }
+    return {
+      text: `${diasRestantes} días restantes`,
+      color: '#4ade80',
+      bg: 'rgba(34,197,94,0.12)',
+      icon: <CheckCircle2 style={{ width: 18, height: 18 }} />
+    };
+  };
+
+  const diasDisplay = getDiasRestantesDisplay();
 
   return (
     <div className="conv-detail-page" style={{ maxWidth: 820, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20, padding: '0 16px' }}>
@@ -97,7 +149,7 @@ export default function ConvocatoriaDetail() {
             background: estado.bg, color: estado.color, border: `1px solid ${estado.border}`,
           }}>
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor' }} />
-            {conv.estado}
+            {estado.label}
           </span>
           <span style={{
             padding: '4px 13px', borderRadius: 999,
@@ -114,6 +166,32 @@ export default function ConvocatoriaDetail() {
         <h1 style={{ margin: '0 0 20px', fontSize: 'clamp(18px, 3vw, 28px)', fontWeight: 800, color: '#f9fafb', letterSpacing: '-0.03em', lineHeight: 1.25 }}>
           {conv.titulo}
         </h1>
+
+        {/* Banner de tiempo restante */}
+        {diasDisplay && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            padding: '14px 20px',
+            borderRadius: 12,
+            background: diasDisplay.bg,
+            border: `1px solid ${diasDisplay.color}30`,
+            marginBottom: 20,
+            color: diasDisplay.color,
+          }}>
+            {diasDisplay.icon}
+            <span style={{ fontSize: 14, fontWeight: 700 }}>
+              {diasDisplay.text}
+            </span>
+            {conv.fecha_cierre && (
+              <span style={{ fontSize: 12, opacity: 0.8 }}>
+                (Fecha límite: {formatDate(conv.fecha_cierre)})
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Bloque visible: Ver convocatoria original + URL exacta (siempre arriba) */}
         <div id="ver-convocatoria-original" style={{
@@ -139,7 +217,7 @@ export default function ConvocatoriaDetail() {
                 {urlTerminos && urlTerminos !== urlFuente && (
                   <a href={urlTerminos} target="_blank" rel="noopener noreferrer" className="btn-secondary" style={{ textDecoration: 'none' }}>
                     <FileText style={{ width: 14, height: 14 }} />
-                    Términos de referencia
+                    Descargar términos de referencia
                   </a>
                 )}
                 <button onClick={() => downloadConvocatoriaPdf(conv.id)} className="btn-secondary">
@@ -155,6 +233,30 @@ export default function ConvocatoriaDetail() {
           )}
         </div>
 
+        {/* Sección de Montos */}
+        {(conv.monto_maximo || conv.monto_minimo || conv.monto_formateado) && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            padding: '16px 20px',
+            borderRadius: 14,
+            background: 'rgba(6,182,212,0.08)',
+            border: '1px solid rgba(6,182,212,0.25)',
+            marginBottom: 20,
+          }}>
+            <Award style={{ width: 28, height: 28, color: '#06b6d4' }} />
+            <div>
+              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: '#06b6d4', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                Financiamiento disponible
+              </p>
+              <p style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 800, color: '#f9fafb' }}>
+                {conv.monto_formateado || formatMonto(conv.monto_minimo, conv.monto_maximo, conv.moneda)}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Info grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 28 }}>
           <InfoCard Icon={Building2} label="Entidad"   value={conv.entidad} />
@@ -163,9 +265,6 @@ export default function ConvocatoriaDetail() {
           {conv.sector    && <InfoCard Icon={Tag}       label="Sector"    value={conv.sector} />}
           {conv.fecha_apertura && <InfoCard Icon={Calendar} label="Apertura" value={formatDate(conv.fecha_apertura)} />}
           {conv.fecha_cierre   && <InfoCard Icon={Clock}    label="Cierre"   value={formatDate(conv.fecha_cierre)} color="#fb923c" />}
-          {formatMonto(conv.monto_minimo, conv.monto_maximo, conv.moneda) && (
-            <InfoCard Icon={DollarSign} label="Monto" value={formatMonto(conv.monto_minimo, conv.monto_maximo, conv.moneda)} color="#06b6d4" />
-          )}
         </div>
 
         {/* Secciones de texto */}

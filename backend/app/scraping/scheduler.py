@@ -20,13 +20,18 @@ from app.scraping.sources.caf import CAFScraper
 from app.scraping.sources.giz import GIZScraper
 from app.scraping.sources.cordis import CORDISScraper
 from app.scraping.sources.grants_gov_api import GrantsGovAPIFetcher
+from app.scraping.sources.mintic import MinTICScraper
+from app.scraping.sources.bancoldex import BancoldexScraper
 
 logger = logging.getLogger(__name__)
 
 SCRAPERS = [
+    # Colombia/Latam prioritarios
     MincienciasScraper(),
-    InnpulsaScraper(),
     SenaScraper(),
+    MinTICScraper(),
+    BancoldexScraper(),
+    # Internacional (requieren verificación de URLs)
     EUFundingScraper(),
     CORDISScraper(),
     WorldBankScraper(),

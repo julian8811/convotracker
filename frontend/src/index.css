@@ -234,3 +234,20 @@
   .btn-primary, .btn-secondary { min-height: 44px; }
   .card table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
+
+/* Grid responsive para dashboard y listas */
+@media (max-width: 639px) {
+  .dashboard-grid { grid-template-columns: 1fr !important; }
+  .list-header { flex-direction: column; align-items: stretch; gap: 12px; }
+  .list-header > div:last-child { justify-content: flex-start; }
+  .tabs-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tabs-container > button { white-space: nowrap; padding: 8px 12px !important; }
+}
+
+/* Cards más compactos en móvil */
+@media (max-width: 639px) {
+  .card { padding: 12px 14px !important; }
+  .card h1 { font-size: 18px !important; }
+  .kpi-card { padding: 14px 16px !important; }
+  .kpi-card p { font-size: 22px !important; }
+}
