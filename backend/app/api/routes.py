@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, desc, asc
 from datetime import datetime
@@ -248,3 +248,20 @@ async def cleanup_bad_urls(db: AsyncSession = Depends(get_db)):
     await db.commit()
     
     return {"deleted": deleted_count, "message": f"Se eliminaron {deleted_count} convocatorias con URLs incorrectas"}
+
+
+# Import para scraping endpoint
+from app.scraping.scheduler import run_all_scrapers
+
+
+@router.post("/scraping/run")
+async def trigger_scraping(
+    background_tasks: BackgroundTasks,
+):
+    """
+    Endpoint para ejecutar el scraping manualmente o vía cron.
+    GitHub Actions usa este endpoint para el scraping diario automatizado.
+    """
+    background_tasks.add_task(run_all_scrapers)
+    return {"status": "started", "message": "Scraping cycle initiated"}
+

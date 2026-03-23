@@ -1,0 +1,39 @@
+name: Daily Scraping
+
+on:
+  # Ejecutar diariamente a las 6:00 AM UTC (1:00 AM Colombia)
+  schedule:
+    - cron: '0 6 * * *'
+  # Permitir ejecución manual desde GitHub Actions
+  workflow_dispatch:
+  # También ejecutar después de cada push al main
+  push:
+    branches: [main]
+
+jobs:
+  trigger-scraping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Trigger scraping on Render
+        run: |
+          curl -X POST "${{ secrets.API_URL }}/api/v1/scraping/run" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Scraper/1.0" \
+            -w "\nHTTP Status: %{http_code}\n"
+        continue-on-error: true
+
+  # Verificar que el scraping registró logs
+  verify-scraping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: trigger-scraping
+    if: always()
+    
+    steps:
+      - name: Check scraping logs
+        run: |
+          echo "Verificando que el scraping se ejecutó..."
+          RESPONSE=$(curl -s "${{ secrets.API_URL }}/api/v1/scraping/logs?limit=1")
+          echo "Último log: $RESPONSE"
