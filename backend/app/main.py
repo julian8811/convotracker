@@ -1,18 +1,23 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import select, desc, func
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
 from app.database import init_db, get_db, async_session
 from app.api.routes import router as api_router
 from app.api.dashboard import router as dashboard_router
+from app.api.auth import router as auth_router
+from app.api.favorites import router as favorites_router
 from app.scraping.scheduler import run_all_scrapers, run_single_scraper, SCRAPERS
 from app.services.pdf_service import generate_convocatoria_pdf, generate_report_pdf
 from app.models.convocatoria import Convocatoria
+from app.utils.rate_limit import limiter
 
 logging.basicConfig(level=settings.LOG_LEVEL, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -62,6 +67,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Add rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -73,6 +82,8 @@ app.add_middleware(
 
 app.include_router(api_router)
 app.include_router(dashboard_router)
+app.include_router(auth_router)
+app.include_router(favorites_router)
 
 
 @app.get("/")
@@ -86,7 +97,8 @@ async def root():
 
 
 @app.post("/api/v1/scraping/run")
-async def trigger_scraping(background_tasks: BackgroundTasks):
+@limiter.limit("5/minute")
+async def trigger_scraping(request: Request, background_tasks: BackgroundTasks):
     # Ejecutar en segundo plano para no superar el timeout de Render (~30 s)
     background_tasks.add_task(_run_scrapers_background)
     return {

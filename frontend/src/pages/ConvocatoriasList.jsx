@@ -5,6 +5,7 @@ import {
   Clock, MapPin, Building2, Tag, DollarSign, ExternalLink, SlidersHorizontal
 } from 'lucide-react';
 import { getConvocatorias, getFilterOptions, downloadAllPdf } from '../services/api';
+import FavoriteButton from '../components/FavoriteButton';
 
 const ESTADO_COLORS = {
   abierta:  { bg: 'rgba(34,197,94,0.14)',  color: '#4ade80', border: 'rgba(34,197,94,0.35)' },
@@ -205,24 +206,27 @@ export default function ConvocatoriasList() {
               <Link key={c.id} to={`/convocatorias/${c.id}`} className="card" style={{ padding: '18px 20px', textDecoration: 'none', display: 'block' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {/* Badges */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, alignItems: 'center' }}>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 5,
-                      padding: '3px 10px', borderRadius: 999,
-                      fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-                      background: est.bg, color: est.color, border: `1px solid ${est.border}`,
-                    }}>
-                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor' }} />
-                      {c.estado}
-                    </span>
-                    <span style={{
-                      padding: '3px 10px', borderRadius: 999, fontSize: 10, fontWeight: 600,
-                      letterSpacing: '0.06em', textTransform: 'uppercase',
-                      background: 'rgba(148,163,184,0.08)', color: '#6b7280',
-                      border: '1px solid rgba(148,163,184,0.2)',
-                    }}>
-                      {tipoLabels[c.tipo] || c.tipo}
-                    </span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', gap: 7 }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        padding: '3px 10px', borderRadius: 999,
+                        fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                        background: est.bg, color: est.color, border: `1px solid ${est.border}`,
+                      }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor' }} />
+                        {c.estado}
+                      </span>
+                      <span style={{
+                        padding: '3px 10px', borderRadius: 999, fontSize: 10, fontWeight: 600,
+                        letterSpacing: '0.06em', textTransform: 'uppercase',
+                        background: 'rgba(148,163,184,0.08)', color: '#6b7280',
+                        border: '1px solid rgba(148,163,184,0.2)',
+                      }}>
+                        {tipoLabels[c.tipo] || c.tipo}
+                      </span>
+                    </div>
+                    <FavoriteButton convocatoriaId={c.id} size="small" />
                   </div>
 
                   {/* Título */}

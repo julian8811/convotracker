@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { getConvocatoria, downloadConvocatoriaPdf } from '../services/api';
 import { ensureAbsoluteUrl } from '../utils/urls';
+import FavoriteButton from '../components/FavoriteButton';
 
 const ESTADO = {
   abierta:  { bg: 'rgba(34,197,94,0.14)',  color: '#4ade80', border: 'rgba(34,197,94,0.35)' },
@@ -106,6 +107,7 @@ export default function ConvocatoriaDetail() {
           }}>
             {conv.tipo}
           </span>
+          <FavoriteButton convocatoriaId={conv.id} />
         </div>
 
         {/* Título */}

@@ -1,17 +1,45 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Search, Globe, BarChart3, Bot, Menu, X, ChevronRight, Radar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Search, Globe, BarChart3, Bot, Menu, X, ChevronRight, Radar, Star, LogIn, LogOut } from 'lucide-react';
+import { getToken, getMe, logout } from '../services/api';
 
 const navItems = [
   { path: '/',              label: 'Inicio',         icon: Globe,    color: '#06b6d4' },
   { path: '/convocatorias', label: 'Convocatorias',   icon: Search,   color: '#22c55e' },
-  { path: '/dashboard',     label: 'Dashboard',       icon: BarChart3,color: '#a855f7' },
-  { path: '/scraping',      label: 'Scraping',        icon: Bot,      color: '#f97316' },
+  { path: '/dashboard',    label: 'Dashboard',      icon: BarChart3,color: '#a855f7' },
+  { path: '/scraping',     label: 'Scraping',        icon: Bot,      color: '#f97316' },
+  { path: '/favorites',    label: 'Favoritos',       icon: Star,    color: '#eab308' },
 ];
 
 export default function Layout({ children }) {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const token = getToken();
+    if (token) {
+      try {
+        const userData = await getMe();
+        setUser(userData);
+      } catch (err) {
+        logout();
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen">
@@ -80,7 +108,7 @@ export default function Layout({ children }) {
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '10px 12px', borderRadius: 12,
                   textDecoration: 'none',
-                  background: isActive ? `rgba(${item.color === '#06b6d4' ? '6,182,212' : item.color === '#22c55e' ? '34,197,94' : item.color === '#a855f7' ? '168,85,247' : '249,115,22'},0.1)` : 'transparent',
+                  background: isActive ? `rgba(${item.color === '#06b6d4' ? '6,182,212' : item.color === '#22c55e' ? '34,197,94' : item.color === '#a855f7' ? '168,85,247' : item.color === '#eab308' ? '234,179,8' : '249,115,22'},0.1)` : 'transparent',
                   border: `1px solid ${isActive ? `${item.color}33` : 'transparent'}`,
                   transition: 'all 200ms ease-out',
                 }}
@@ -114,6 +142,59 @@ export default function Layout({ children }) {
             borderTop: '1px solid rgba(148,163,184,0.1)',
           }}
         >
+          {/* Auth section */}
+          {!loading && (
+            <div style={{ marginBottom: 12 }}>
+              {user ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: '#f9fafb', margin: 0 }}>{user.email}</p>
+                    <p style={{ fontSize: 10, color: '#6b7280', margin: 0 }}>Conectado</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      padding: '8px', borderRadius: 8,
+                      background: 'rgba(239,68,68,0.1)',
+                      border: '1px solid rgba(239,68,68,0.3)',
+                      color: '#ef4444', cursor: 'pointer',
+                    }}
+                    title="Cerrar sesión"
+                  >
+                    <LogOut style={{ width: 16, height: 16 }} />
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Link
+                    to="/login"
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      padding: '10px 12px', borderRadius: 12,
+                      background: 'rgba(59,130,246,0.1)',
+                      border: '1px solid rgba(59,130,246,0.3)',
+                      color: '#3b82f6', textDecoration: 'none', fontSize: 12, fontWeight: 600,
+                    }}
+                  >
+                    <LogIn style={{ width: 14, height: 14 }} />
+                    Ingresar
+                  </Link>
+                  <Link
+                    to="/register"
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      padding: '10px 12px', borderRadius: 12,
+                      background: 'rgba(34,197,94,0.1)',
+                      border: '1px solid rgba(34,197,94,0.3)',
+                      color: '#22c55e', textDecoration: 'none', fontSize: 12, fontWeight: 600,
+                    }}
+                  >
+                    Regístrate
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
           <div
             style={{
               padding: '10px 12px', borderRadius: 12,
