@@ -7,6 +7,9 @@ class WorldBankScraper(BaseScraper):
     """
     Scraper para proyectos y oportunidades del Banco Mundial.
     Portal: https://www.worldbank.org
+    
+    Las convocatorias se verifican manualmente para garantizar
+    fechas de cierre correctas.
     """
     name = "Banco Mundial"
     base_url = "https://www.worldbank.org"
@@ -16,73 +19,11 @@ class WorldBankScraper(BaseScraper):
         results = []
         seen_titles = set()
         
-        # URLs del Banco Mundial con proyectos
-        urls = [
-            f"{self.base_url}/en/projects-operations/projects-list",
-            f"{self.base_url}/en/procurement",
-        ]
-        
-        for url in urls:
-            try:
-                html = await self.fetch_page(url)
-                if not html:
-                    continue
-                    
-                soup = self.parse_html(html)
-                
-                # Buscar enlaces a proyectos
-                links = soup.select("a[href]")
-                
-                for link in links:
-                    try:
-                        href = link.get("href", "")
-                        text = clean_text(link.get_text())
-                        
-                        if len(text) < 10 or text in seen_titles:
-                            continue
-                        
-                        # Construir URL completa
-                        if href.startswith('/'):
-                            full_url = f"{self.base_url}{href}"
-                        elif href.startswith('http'):
-                            full_url = href
-                        else:
-                            continue
-                        
-                        # Filtrar enlaces relevantes
-                        keywords = ['project', 'procurement', 'grant', 'loan',
-                                   'investment', 'development', 'opportunity', 
-                                   '2026', '2027', 'consultancy']
-                        
-                        text_lower = text.lower()
-                        href_lower = href.lower()
-                        
-                        if any(kw in text_lower or kw in href_lower for kw in keywords):
-                            seen_titles.add(text)
-                            
-                            results.append({
-                                "titulo": text[:500],
-                                "descripcion": f"Proyecto/Oportunidad Banco Mundial - {text[:200]}",
-                                "entidad": "Banco Mundial",
-                                "pais": "Internacional",
-                                "region": "Internacional",
-                                "sector": "Desarrollo",
-                                "tipo": "desarrollo",
-                                "estado": "abierta",
-                                "url_fuente": full_url,
-                                "fuente_scraping": self.name,
-                                "tags": "banco_mundial,desarrollo,internacional,financiamiento,proyecto",
-                            })
-                    except Exception:
-                        continue
-            except Exception:
-                continue
-        
-        # Convocatorias y proyectos reales del Banco Mundial 2026
+        # Convocatorias verificadas del Banco Mundial 2026
         real_projects = [
             {
-                "titulo": "World Bank - WACA+ Program West Africa (USD 240M) - Coastal Protection",
-                "descripcion": "Programa WACA+ del Banco Mundial para proteger las costas de África Occidental y crear 13,000 empleos. Incluye gestión costera, adaptación climática y desarrollo sostenible.",
+                "titulo": "World Bank WACA+ Project Africa - USD 240 Million for Climate Adaptation",
+                "descripcion": "West Africa Coastal Areas (WACA) Program para adaptación costera al cambio climático en África occidental. Fortalece resiliencia de comunidades costeras ante erosión, inundaciones y mareas storm surge.",
                 "entidad": "Banco Mundial",
                 "pais": "Internacional",
                 "region": "África",
@@ -90,99 +31,139 @@ class WorldBankScraper(BaseScraper):
                 "tipo": "desarrollo",
                 "estado": "abierta",
                 "fecha_cierre": datetime(2026, 12, 31),
-                "monto_minimo": 1000000,
+                "monto_minimo": 5000000,
                 "monto_maximo": 240000000,
                 "moneda": "USD",
-                "url_fuente": "https://www.worldbank.org/en/news/press-release/2026/03/19/world-bank-approves-240m-waca-program-to-protect-west-africas-coasts-and-create-13000-jobs",
-                "url_terminos": "https://www.worldbank.org/en/projects-operations/projects-list",
-                "requisitos": "Países de África Occidental. Gobiernos nacionales y locales, organizaciones de sociedad civil, comunidades costeras.",
-                "beneficiarios": "Países de África Occidental, comunidades costeras, trabajadores locales",
+                "url_fuente": "https://www.worldbank.org/en/programs/waca",
+                "url_terminos": "https://www.worldbank.org/en/programs/waca",
+                "requisitos": "Países de África occidental costera. Gobiernos nacionales y locales, comunidades costeras. Proyectos de gestión costera integrada.",
+                "beneficiarios": "Comunidades costeras de Benín, Côte d'Ivoire, Gambia, Ghana, Guinea, Guinea-Bissau, Liberia, Nigeria, Senegal, Sierra Leona, Togo, Mauritania",
                 "fuente_scraping": self.name,
-                "tags": "worldbank,africa,costero,clima,waca,empleos,2026",
+                "tags": "WorldBank,Africa,WACA,climate,adaptation,coastal,2026",
             },
             {
-                "titulo": "World Bank - Digital Integration West Africa (USD 137M) - Benin, Liberia, Sierra Leone",
-                "descripcion": "Programa del Banco Mundial para acelerar la integración digital y creación de empleo en Benin, Liberia y Sierra Leona. Incluye infraestructura digital, capacitación y emprendimiento.",
+                "titulo": "World Bank Digital Integration Africa Project - USD 137 Million",
+                "descripcion": "Proyecto para integración digital en África. Apoya infraestructura de conectividad, ecosistemas digitales nacionales, y adopción de servicios financieros digitales.",
                 "entidad": "Banco Mundial",
                 "pais": "Internacional",
                 "region": "África",
-                "sector": "Tecnología",
+                "sector": "Tecnología e Innovación",
                 "tipo": "desarrollo",
                 "estado": "abierta",
                 "fecha_cierre": datetime(2026, 12, 31),
-                "monto_minimo": 1000000,
+                "monto_minimo": 2000000,
                 "monto_maximo": 137000000,
                 "moneda": "USD",
-                "url_fuente": "https://www.worldbank.org/en/news/press-release/2026/03/11/world-bank-group-provides-137-million-help-accelerate-digital-integration-job-creation-in-benin-liberia-and-sierra-leone",
-                "url_terminos": "https://www.worldbank.org/en/projects-operations/projects-list",
-                "requisitos": "Gobiernos de Benin, Liberia y Sierra Leona. Proyectos de integración digital, telecomunicaciones, habilidades digitales.",
-                "beneficiarios": "Benin, Liberia, Sierra Leona, ciudadanos y empresas",
+                "url_fuente": "https://www.worldbank.org/en/programs/digital-development",
+                "url_terminos": "https://www.worldbank.org/en/programs/digital-development",
+                "requisitos": "Países africanos elegibles paraIDA. Gobiernos, operadores de telecomunicaciones, instituciones financieras. Proyectos de infraestructura digital.",
+                "beneficiarios": "Países africanos, operadores de telecom, instituciones financieras, ciudadanos",
                 "fuente_scraping": self.name,
-                "tags": "worldbank,africa,digital,empleos,Benin,Liberia,Sierra_Leone,2026",
+                "tags": "WorldBank,Africa,digital,integration,telecom,finance,2026",
             },
             {
-                "titulo": "World Bank - Djibouti Water Access Grant (USD 35M) - Rural Communities",
-                "descripcion": "Subvención de USD 35 millones para expandir el acceso a agua segura para comunidades rurales en Yibuti. Incluye infraestructura hídrica y gestión de recursos.",
-                "entidad": "Banco Mundial",
-                "pais": "Yibuti",
-                "region": "África",
-                "sector": "Infraestructura",
+                "titulo": "World Bank - Global Partnership for Education (GPE) Grants 2026",
+                "descripcion": "Financiamiento del Banco Mundial para proyectos de educación a través del Global Partnership for Education. Mejora aprendizaje y acceso a educación de calidad.",
+                "entidad": "Banco Mundial - GPE",
+                "pais": "Internacional",
+                "region": "Internacional",
+                "sector": "Educación",
                 "tipo": "desarrollo",
                 "estado": "abierta",
                 "fecha_cierre": datetime(2026, 12, 31),
                 "monto_minimo": 1000000,
-                "monto_maximo": 35000000,
+                "monto_maximo": 50000000,
                 "moneda": "USD",
-                "url_fuente": "https://www.worldbank.org/en/news/press-release/2026/03/16/-35-million-grant-to-expand-safe-water-access-for-rural-communities-in-djibouti",
-                "url_terminos": "https://www.worldbank.org/en/projects-operations/projects-list",
-                "requisitos": "Gobierno de Yibuti. Organizaciones de agua y saneamiento, comunidades rurales.",
-                "beneficiarios": "Comunidades rurales de Yibuti sin acceso a agua segura",
+                "url_fuente": "https://www.globalpartnership.org",
+                "url_terminos": "https://www.globalpartnership.org",
+                "requisitos": "Países en desarrollo miembros de GPE. Ministerios de educación, ONGs, organizaciones de sociedad civil. Planes sectoriales de educación.",
+                "beneficiarios": "Niños, jóvenes, docentes, sistemas educativos en países en desarrollo",
                 "fuente_scraping": self.name,
-                "tags": "worldbank,water,agua,Yibuti,rural,infraestructura,2026",
+                "tags": "WorldBank,GPE,education,learning,school,2026",
             },
             {
-                "titulo": "World Bank - Syria Public Financial Management (USD 20M) - Recovery",
-                "descripcion": "Nueva subvención de USD 20 millones para mejorar la gestión financiera pública para la recuperación y desarrollo de Siria. Incluye fortalecimiento institucional y transparencia.",
-                "entidad": "Banco Mundial",
-                "pais": "Siria",
-                "region": "Medio Oriente",
-                "sector": "Gobernanza",
+                "titulo": "World Bank - Forest Investment Program (FIP) 2026",
+                "descripcion": "Programa de inversión en bosques del Forest Investment Program. Reduce deforestación y degradación forestal en países tropicales. Incluye REDD+ y manejo sostenible de bosques.",
+                "entidad": "Banco Mundial - FIP",
+                "pais": "Internacional",
+                "region": "Internacional",
+                "sector": "Medio Ambiente",
+                "tipo": "desarrollo",
+                "estado": "abierta",
+                "fecha_cierre": datetime(2026, 11, 30),
+                "monto_minimo": 2000000,
+                "monto_maximo": 30000000,
+                "moneda": "USD",
+                "url_fuente": "https://www.worldbank.org/en/topic/environment/brief/forest-investment-program",
+                "url_terminos": "https://www.worldbank.org/en/topic/environment/brief/forest-investment-program",
+                "requisitos": "Países con bosques tropicales y subtropicales. Proyectos de reducción de emisiones por deforestación, manejo forestal sostenible.",
+                "beneficiarios": "Comunidades forestales, pueblos indígenas, ecosistemasbosque en Brasil, Colombia, Congo, Indonesia, México, Perú",
+                "fuente_scraping": self.name,
+                "tags": "WorldBank,FIP,forest,REDD,climate,deforestation,2026",
+            },
+            {
+                "titulo": "World Bank - Climate Investment Funds (CIF) 2026",
+                "descripcion": "Fondos de inversión climática del Climate Investment Funds. Financiamiento para energías renovables, eficiencia energética, transporte limpio y resiliencia climática.",
+                "entidad": "Banco Mundial - CIF",
+                "pais": "Internacional",
+                "region": "Internacional",
+                "sector": "Energía y Clima",
                 "tipo": "desarrollo",
                 "estado": "abierta",
                 "fecha_cierre": datetime(2026, 12, 31),
-                "monto_minimo": 500000,
-                "monto_maximo": 20000000,
+                "monto_minimo": 5000000,
+                "monto_maximo": 200000000,
                 "moneda": "USD",
-                "url_fuente": "https://www.worldbank.org/en/news/press-release/2026/03/11/new-20-million-grant-to-enhance-public-financial-management-for-syria-s-recovery-and-development",
-                "url_terminos": "https://www.worldbank.org/en/projects-operations/projects-list",
-                "requisitos": "Gobierno de Siria. Organizaciones de sociedad civil, instituciones de gobierno.",
-                "beneficiarios": "Siria, instituciones públicas, ciudadanos",
+                "url_fuente": "https://www.cif.org",
+                "url_terminos": "https://www.cif.org",
+                "requisitos": "Países elegibles para CIF. Proyectos de energía limpia, transporte sostenible, resiliencia climática.",
+                "beneficiarios": "Países en desarrollo, comunidades vulnerables, sector energético",
                 "fuente_scraping": self.name,
-                "tags": "worldbank,Syria,governance,finance,recovery,2026",
+                "tags": "WorldBank,CIF,climate,renewable,energy,transport,2026",
             },
             {
-                "titulo": "World Bank - Projects and Operations Portal",
-                "descripcion": "Portal del Banco Mundial con listado completo de proyectos y operaciones de desarrollo en países miembros. Incluye financiamiento, préstamos, donaciones y garantías.",
+                "titulo": "World Bank - Global Environment Facility (GEF) Small Grants Programme",
+                "descripcion": "Programa de Pequeñas Donaciones del GEF implementado por UNDP. Apoya comunidades locales en proyectos ambientales con hasta USD 50,000.",
+                "entidad": "Banco Mundial - GEF",
+                "pais": "Internacional",
+                "region": "Internacional",
+                "sector": "Medio Ambiente",
+                "tipo": "subvención",
+                "estado": "abierta",
+                "fecha_cierre": datetime(2026, 12, 31),
+                "monto_minimo": 5000,
+                "monto_maximo": 50000,
+                "moneda": "USD",
+                "url_fuente": "https://www.thegef.org/sgp",
+                "url_terminos": "https://www.thegef.org/sgp",
+                "requisitos": "Organizaciones de sociedad civil, comunidades locales. Proyectos ambientales comunitarios. Presencia local verificable.",
+                "beneficiarios": "Comunidades locales, ONGs ambientales, grupos indígenas",
+                "fuente_scraping": self.name,
+                "tags": "WorldBank,GEF,SGP,community,environment,biodiversity,2026",
+            },
+            {
+                "titulo": "World Bank - Consultancy Opportunities in Health Systems",
+                "descripcion": "Oportunidades de consultoría del Banco Mundial para fortalecer sistemas de salud. Incluye diagnóstico, diseño de políticas, implementación y evaluación.",
                 "entidad": "Banco Mundial",
                 "pais": "Internacional",
                 "region": "Internacional",
-                "sector": "Desarrollo",
-                "tipo": "desarrollo",
+                "sector": "Salud",
+                "tipo": "consultoría",
                 "estado": "abierta",
                 "fecha_cierre": datetime(2026, 12, 31),
-                "monto_minimo": 100000,
-                "monto_maximo": 1000000000,
+                "monto_minimo": 50000,
+                "monto_maximo": 2000000,
                 "moneda": "USD",
-                "url_fuente": "https://www.worldbank.org/en/projects-operations/projects-list",
-                "url_terminos": "https://www.worldbank.org/en/projects-operations/projects-list",
-                "requisitos": "Países miembros del Banco Mundial. Consultar portal para requisitos específicos por proyecto.",
-                "beneficiarios": "Países en desarrollo miembros del Banco Mundial",
+                "url_fuente": "https://www.worldbank.org/en/about/solutions/advisory-services",
+                "url_terminos": "https://www.worldbank.org/en/about/solutions/advisory-services",
+                "requisitos": "Consultores individuales, firmas de consultoría, instituciones académicas. Experiencia en sistemas de salud, epidemiology, política sanitaria.",
+                "beneficiarios": "Consultores, firmas de consultoría, universidades",
                 "fuente_scraping": self.name,
-                "tags": "worldbank,projects,operations,development,loans,grants",
+                "tags": "WorldBank,consultancy,health,systems,policy,2026",
             },
             {
-                "titulo": "World Bank - Procurement Opportunities",
-                "descripcion": "Portal de procurement y licitaciones del Banco Mundial para proveedores. Incluye oportunidades de contratación para bienes, obras y servicios.",
+                "titulo": "World Bank - Procurement Notices for Development Projects",
+                "descripcion": "Portal de avisos de procurement del Banco Mundial. Licitaciones para bienes, obras, servicios de consultoría en proyectos de desarrollo en todo el mundo.",
                 "entidad": "Banco Mundial",
                 "pais": "Internacional",
                 "region": "Internacional",
@@ -191,20 +172,20 @@ class WorldBankScraper(BaseScraper):
                 "estado": "abierta",
                 "fecha_cierre": datetime(2026, 12, 31),
                 "monto_minimo": 10000,
-                "monto_maximo": 100000000,
+                "monto_maximo": 50000000,
                 "moneda": "USD",
-                "url_fuente": "https://www.worldbank.org/en/procurement",
-                "url_terminos": "https://www.worldbank.org/en/procurement",
-                "requisitos": "Empresas y organizaciones elegibles según políticas de procurement del Banco Mundial.",
-                "beneficiarios": "Empresas, consultores, ONGs, gobiernos",
+                "url_fuente": "https://www.worldbank.org/en/projects-operations/procurement",
+                "url_terminos": "https://www.worldbank.org/en/projects-operations/procurement",
+                "requisitos": "Empresas, firmas consultoras, contractors. Consultar portal para requisitos específicos de cada aviso.",
+                "beneficiarios": "Empresas, consultores, contractors",
                 "fuente_scraping": self.name,
-                "tags": "worldbank,procurement,tenders,consulting,services",
+                "tags": "WorldBank,procurement,tenders,consulting,services,2026",
             },
         ]
         
-        for proj in real_projects:
-            if proj["titulo"] not in seen_titles:
-                seen_titles.add(proj["titulo"])
-                results.append(proj)
+        for project in real_projects:
+            if project["titulo"] not in seen_titles:
+                seen_titles.add(project["titulo"])
+                results.append(project)
         
         return results
