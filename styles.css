@@ -173,6 +173,31 @@ button.ghost {
   color: var(--accent);
 }
 
+.cli-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.8rem;
+}
+
+.cli-shot {
+  margin: 0;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cli-shot img {
+  width: 100%;
+  display: block;
+}
+
+.cli-shot figcaption {
+  padding: 0.6rem 0.7rem;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
 .code {
   background: #020617;
   border: 1px solid #334155;
