@@ -1461,6 +1461,59 @@ function attachTabHandlers() {
 
 // Renderizar Biblioteca
 function renderCLIBiblioteca() {
+  // Sección WSL al inicio
+  const wslSection = `
+    <div class="cli-wsl-section">
+      <h3>🪟 Instalar Ubuntu en Windows con WSL</h3>
+      <p>Antes de usar la línea de comando, necesitas Ubuntu en tu Windows:</p>
+      
+      <div class="wsl-steps">
+        <div class="wsl-step">
+          <div class="wsl-step-number">1</div>
+          <div class="wsl-step-content">
+            <h4>Abre PowerShell como Administrador</h4>
+            <p>Menú Inicio → "Windows PowerShell (Administrador)"</p>
+            <div class="wsl-capture">
+              <img src="assets/captures/wsl-install-1.svg" alt="Paso 1: PowerShell">
+            </div>
+            <code class="wsl-command">wsl --install</code>
+          </div>
+        </div>
+        
+        <div class="wsl-step">
+          <div class="wsl-step-number">2</div>
+          <div class="wsl-step-content">
+            <h4>Reinicia tu PC</h4>
+            <p>Después del reinicio, Ubuntu se configurará automáticamente.</p>
+            <div class="wsl-capture">
+              <img src="assets/captures/wsl-install-2.svg" alt="Paso 2: Configuración">
+            </div>
+            <p class="wsl-note">📝 Crea tu usuario y contraseña cuando se te pida.</p>
+          </div>
+        </div>
+        
+        <div class="wsl-step">
+          <div class="wsl-step-number">3</div>
+          <div class="wsl-step-content">
+            <h4>✅ Verifica la instalación</h4>
+            <code class="wsl-command">wsl -l -v</code>
+            <div class="wsl-capture">
+              <img src="assets/captures/wsl-install-3.svg" alt="Paso 3: Verificación">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="wsl-alternatives">
+        <h4>💡 Alternativas:</h4>
+        <ul>
+          <li><strong>Microsoft Store:</strong> Busca "Ubuntu" e instala</li>
+          <li><strong>CMD:</strong> <code>wsl --install -d Ubuntu</code></li>
+        </ul>
+      </div>
+    </div>
+  `;
+
   const categories = {};
   cliCommandCatalog.forEach(cmd => {
     if (!categories[cmd.category]) categories[cmd.category] = [];
@@ -1468,6 +1521,13 @@ function renderCLIBiblioteca() {
   });
 
   return `
+    ${wslSection}
+    
+    <div class="cli-intro-section">
+      <h3>🚀 ¿Por qué la línea de comando en bioinformática?</h3>
+      <p>Permite <b>reproducibilidad</b>, <b>escalabilidad</b> y <b>automatización</b>. Linux es estándar en laboratorios y servidores HPC.</p>
+    </div>
+    
     <div class="cli-categories-grid">
       ${Object.entries(categories).map(([cat, cmds]) => `
         <details class="cli-category-card" open>
