@@ -454,6 +454,78 @@ const cliCommandCatalog = [
     detail:
       "Control de calidad de lecturas. Analiza Phred score, contenido GC, adaptadores.",
     bioExample: "fastqc raw_data/*.fastq.gz -o results/qc/"
+  },
+  {
+    cmd: "zcat",
+    category: "Compresion",
+    syntax: "zcat archivo.gz",
+    detail:
+      "Visualiza archivos comprimidos sin descomprimir. Esencial para FastQ y VCF en formato .gz.",
+    bioExample: "zcat muestra.fastq.gz | head -n 8"
+  },
+  {
+    cmd: "gunzip",
+    category: "Compresion",
+    syntax: "gunzip archivo.gz",
+    detail:
+      "Descomprime archivos .gz. Crea versión sin comprimir.",
+    bioExample: "gunzip variantes.vcf.gz"
+  },
+  {
+    cmd: "tar",
+    category: "Compresion",
+    syntax: "tar -czvf archivo.tar.gz carpeta/",
+    detail:
+      "Empaqueta y comprime carpetas. Estándar para distribuir conjuntos de datos.",
+    bioExample: "tar -czvf analisis_2026.tar.gz resultados/"
+  },
+  {
+    cmd: "bwa",
+    category: "Genomica",
+    syntax: "bwa mem ref.fa reads.fq > alineamiento.sam",
+    detail:
+      "Alineador de lecturas cortas/medias contra genoma de referencia. Rápido y preciso.",
+    bioExample: "bwa mem hg38.fa PAC001_R1.fq PAC001_R2.fq > PAC001.sam"
+  },
+  {
+    cmd: "samtools sort",
+    category: "Genomica",
+    syntax: "samtools sort archivo.sam -o archivo.bam",
+    detail:
+      "Ordena archivos BAM por posición genómica. Requiere para meisten operaciones.",
+    bioExample: "samtools sort alineamiento.sam -o alineamiento.bam"
+  },
+  {
+    cmd: "samtools index",
+    category: "Genomica",
+    syntax: "samtools index archivo.bam",
+    detail:
+      "Crea índice .bai para acceso rápido a regiones específicas del BAM.",
+    bioExample: "samtools index mapped.bam"
+  },
+  {
+    cmd: "fastp",
+    category: "Genomica",
+    syntax: "fastp -i lectura.fq -o lectura_clean.fq",
+    detail:
+      "Filtrado y control de calidad todo-en-uno. Detecta adaptadores, recorta calidad.",
+    bioExample: "fastp -i R1.fq -o R1_clean.fq --detect_adapter_for_pe"
+  },
+  {
+    cmd: "seqkit",
+    category: "Genomica",
+    syntax: "seqkit stat archivo.fasta",
+    detail:
+      "Kit de herramientas para secuencias FASTA/FASTQ. Estadísticas, formato, filtering.",
+    bioExample: "seqkit stat referencia.fa"
+  },
+  {
+    cmd: "bedtools",
+    category: "Genomica",
+    syntax: "bedtools intersect -a genes.bed -b variantes.vcf",
+    detail:
+      "Operaciones de genómica intervals. Intersectar variantes con genes, annotaciones.",
+    bioExample: "bedtools intersect -a variantes.vcf -b promotores.bed > var_en_promotores.vcf"
   }
 ];
 
@@ -1680,6 +1752,54 @@ function renderCLIExercises() {
         <button onclick="checkEx6()">Verificar</button>
         <div id="ex6-feedback" class="feedback hidden"></div>
       </div>
+
+      <div class="exercise-card">
+        <h4>✏️ Ejercicio 7: Ver calidad con FastQC</h4>
+        <p>Escribe el comando para ejecutar FastQC en un archivo FASTQ:</p>
+        <input type="text" id="ex7-input" placeholder="fastqc archivo.fastq.gz">
+        <button onclick="checkEx7()">Verificar</button>
+        <div id="ex7-feedback" class="feedback hidden"></div>
+      </div>
+
+      <div class="exercise-card">
+        <h4>✏️ Ejercicio 8: Comprimir archivo</h4>
+        <p>Escribe el comando para comprimir un archivo TSV:</p>
+        <input type="text" id="ex8-input" placeholder="gzip archivo.tsv">
+        <button onclick="checkEx8()">Verificar</button>
+        <div id="ex8-feedback" class="feedback hidden"></div>
+      </div>
+
+      <div class="exercise-card">
+        <h4>✏️ Ejercicio 9: Ver estadísticas de mapeo</h4>
+        <p>Escribe el comando para ver estadísticas de un archivo BAM:</p>
+        <input type="text" id="ex9-input" placeholder="samtools flagstat archivo.bam">
+        <button onclick="checkEx9()">Verificar</button>
+        <div id="ex9-feedback" class="feedback hidden"></div>
+      </div>
+
+      <div class="exercise-card">
+        <h4>✏️ Ejercicio 10: Filtrar variantes por calidad</h4>
+        <p>Usa bcftools para filtrar variantes con QUAL >= 30:</p>
+        <input type="text" id="ex10-input" placeholder="bcftools view -i 'QUAL>=30' variantes.vcf">
+        <button onclick="checkEx10()">Verificar</button>
+        <div id="ex10-feedback" class="feedback hidden"></div>
+      </div>
+
+      <div class="exercise-card">
+        <h4>✏️ Ejercicio 11: Crear estructura de proyecto</h4>
+        <p>Crea directorios para un proyecto bioinfo:</p>
+        <input type="text" id="ex11-input" placeholder="mkdir -p proyecto/{data,results,scripts}">
+        <button onclick="checkEx11()">Verificar</button>
+        <div id="ex11-feedback" class="feedback hidden"></div>
+      </div>
+
+      <div class="exercise-card">
+        <h4>✏️ Ejercicio 12: Descargar genoma de referencia</h4>
+        <p>Usa wget para descargar un archivo del NCBI:</p>
+        <input type="text" id="ex12-input" placeholder="wget https://example.org/genome.fa.gz">
+        <button onclick="checkEx12()">Verificar</button>
+        <div id="ex12-feedback" class="feedback hidden"></div>
+      </div>
     </div>
 
     <!-- Terminal Virtual Interactivo -->
@@ -1711,8 +1831,48 @@ function renderCLIExercises() {
 
 // Renderizar Laboratorio
 function renderCLILab() {
+  // Generar challenge del día
+  const today = new Date().getDate();
+  const challenges = [
+    {
+      title: "🎯 Challenge del Día: Contar Genes",
+      desc: "Tienes un archivo FASTA con genes. ¿Cuántos genes tiene?",
+      hint: "Usa grep para buscar los encabezados (^>) y wc para contar",
+      answer: "grep '^>' genes.fasta | wc -l"
+    },
+    {
+      title: "🎯 Challenge del Día: Filtrar Reads de Calidad",
+      desc: "Un archivo FASTQ tiene reads con calidad baja en las últimas 10 bases. ¿Cómo las recorta?",
+      hint: "Usa fastp o trimmomatic",
+      answer: "fastp -i reads.fq -o reads_clean.fq --cut_tail"
+    },
+    {
+      title: "🎯 Challenge del Día: Encontrar SNPs",
+      desc: "Tienes un VCF y quieres solo variantes con calidad >= 50",
+      hint: "Usa bcftools con filtro de QUAL",
+      answer: "bcftools view -i 'QUAL>=50' variantes.vcf"
+    },
+    {
+      title: "🎯 Challenge del Día: Extraer Exones",
+      desc: "Tienes un BED con exones y quieres saber cuántos覆盖率 tiene un BAM",
+      hint: "Usa bedtools coverage",
+      answer: "bedtools coverage -a exones.bed -b mapeo.bam"
+    }
+  ];
+  const dailyChallenge = challenges[today % challenges.length];
+
   return `
     <div class="cli-lab">
+      <!-- Daily Challenge -->
+      <div class="lab-section daily-challenge">
+        <h4>${dailyChallenge.title}</h4>
+        <p>${dailyChallenge.desc}</p>
+        <p class="hint">💡 Pista: ${dailyChallenge.hint}</p>
+        <input type="text" id="challenge-input" placeholder="Escribe el comando completo...">
+        <button onclick="checkDailyChallenge()">Verificar</button>
+        <div id="challenge-feedback" class="feedback hidden"></div>
+      </div>
+
       <div class="lab-section">
         <h4>🔬 Laboratorio: Pipeline de análisis</h4>
         <p>Ordena los siguientes pasos del pipeline (escribe los números 1-5):</p>
@@ -1746,6 +1906,54 @@ function renderCLILab() {
           <div id="fix2-feedback" class="feedback hidden"></div>
         </div>
       </div>
+
+      <!-- Simulador de Análisis Completo -->
+      <div class="lab-section simulation-lab">
+        <h4>🧬 Simulador: Análisis de Variantes</h4>
+        <p>Sigue los pasos para completar un análisis de variantes:</p>
+        
+        <div class="simulation-steps">
+          <div class="sim-step" data-step="1">
+            <span class="step-num">1</span>
+            <div class="step-content">
+              <strong>QC de lecturas</strong>
+              <code>fastqc muestras/*.fastq.gz</code>
+              <button class="sim-btn" onclick="runSimStep(1)">Simular</button>
+              <div class="sim-output hidden" id="sim-out-1">✓ FastQC completado: 24 archivos procesados</div>
+            </div>
+          </div>
+          
+          <div class="sim-step" data-step="2">
+            <span class="step-num">2</span>
+            <div class="step-content">
+              <strong>Alineamiento</strong>
+              <code>bwa mem ref.fa R1.fq R2.fq > alineamiento.sam</code>
+              <button class="sim-btn" onclick="runSimStep(2)">Simular</button>
+              <div class="sim-output hidden" id="sim-out-2">✓ Alineamiento: 98.5% mapeo</div>
+            </div>
+          </div>
+          
+          <div class="sim-step" data-step="3">
+            <span class="step-num">3</span>
+            <div class="step-content">
+              <strong>Variant Calling</strong>
+              <code>bcftools call -v variantes.bcf > variantes.vcf</code>
+              <button class="sim-btn" onclick="runSimStep(3)">Simular</button>
+              <div class="sim-output hidden" id="sim-out-3">✓ 15,234 variantes detectadas</div>
+            </div>
+          </div>
+          
+          <div class="sim-step" data-step="4">
+            <span class="step-num">4</span>
+            <div class="step-content">
+              <strong>Filtrado</strong>
+              <code>bcftools view -i 'QUAL>=30' variantes.vcf > variantes_filt.vcf</code>
+              <button class="sim-btn" onclick="runSimStep(4)">Simular</button>
+              <div class="sim-output hidden" id="sim-out-4">✓ 8,456 variantes de alta calidad</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -1755,26 +1963,55 @@ function renderCLIQuiz() {
   const questions = [
     {
       q: "¿Qué comando cuenta las líneas de un archivo?",
-      options: ["wc -l archivo", "count archivo", "lines archivo"]
+      options: ["wc -l archivo", "count archivo", "lines archivo"],
+      correct: 0
     },
     {
       q: "¿Para qué sirve el flag -h en ls?",
-      options: ["Muestra tamaños legibles", "Muestra archivos ocultos", "Ordena por fecha"]
+      options: ["Muestra tamaños legibles", "Muestra archivos ocultos", "Ordena por fecha"],
+      correct: 0
     },
     {
       q: "¿Cómo visualizas un archivo .gz sin descomprimirlo?",
-      options: ["zcat archivo.gz | head", "cat archivo.gz", "unzip archivo.gz"]
+      options: ["zcat archivo.gz | head", "cat archivo.gz", "unzip archivo.gz"],
+      correct: 0
     },
     {
       q: "¿Qué comando filtra columnas específicas de un TSV?",
-      options: ["cut -f1,3 archivo.tsv", "filter -c archivo.tsv", "select -col archivo.tsv"]
+      options: ["cut -f1,3 archivo.tsv", "filter -c archivo.tsv", "select -col archivo.tsv"],
+      correct: 0
     },
     {
       q: "¿Cuál es el propósito de samtools flagstat?",
-      options: ["Mostrar estadísticas de mapeo", "Convertir BAM a SAM", "Indexar archivos"]
+      options: ["Mostrar estadísticas de mapeo", "Convertir BAM a SAM", "Indexar archivos"],
+      correct: 0
+    },
+    {
+      q: "¿Qué significa el formato FASTA?",
+      options: ["Fast All - texto con encabezados y secuencias", "File Archive Text", "Formatted Amino Acid Sequence"],
+      correct: 0
+    },
+    {
+      q: "¿Cuántas líneas tiene cada read en formato FASTQ?",
+      options: ["4 líneas (ID, seq, +, quality)", "2 líneas", "1 línea"],
+      correct: 0
+    },
+    {
+      q: "¿Qué comando usas para ver las últimas líneas de un archivo?",
+      options: ["tail", "last", "end"],
+      correct: 0
+    },
+    {
+      q: "¿Para qué sirve bcftools?",
+      options: ["Análisis de variantes (SNPs/indels)", "Alineamiento de secuencias", "Ensamblaje de genomas"],
+      correct: 0
+    },
+    {
+      q: "¿Qué formato se usa para variantes genéticas?",
+      options: ["VCF (Variant Call Format)", "JSON", "XML"],
+      correct: 0
     }
   ];
-  const answers = [0, 0, 0, 0, 0];
 
   return `
     <div class="cli-quiz">
@@ -1783,7 +2020,7 @@ function renderCLIQuiz() {
           <p><strong>Pregunta ${i+1}:</strong> ${q.q}</p>
           <div class="quiz-opts">
             ${q.options.map((opt, j) => `
-              <button class="quiz-opt" data-q="${i}" data-a="${j}" data-correct="${j === answers[i]}">${opt}</button>
+              <button class="quiz-opt" data-q="${i}" data-a="${j}" data-correct="${j === q.correct}">${opt}</button>
             `).join('')}
           </div>
           <div id="quiz-fb-${i}" class="quiz-feedback hidden"></div>
@@ -1938,6 +2175,53 @@ window.checkPhyloLab = function() {
   fb.classList.remove('hidden');
   if (ok) { fb.textContent = '✅ ¡Correcto!'; fb.className = 'feedback ok'; }
   else { fb.textContent = '❌ Orden: Obtener secuencias → MAFFT → Modelo → IQ-TREE → FigTree'; fb.className = 'feedback err'; }
+};
+
+// Daily Challenge - verificar respuesta
+window.checkDailyChallenge = function() {
+  const input = document.getElementById('challenge-input').value.toLowerCase().replace(/\s/g, '');
+  const fb = document.getElementById('challenge-feedback');
+  
+  // Los challenges tienen respuestas que pueden variar, verificamos componentes clave
+  const challenges = [
+    { answer: "grep^>genes.fasta|wc-l", hints: ['grep', 'wc', '^>', 'genes'] },
+    { answer: "fastp", hints: ['fastp', 'cut_tail'] },
+    { answer: "bcftoolsview-i'qual>=50'", hints: ['bcftools', 'qual>=50'] },
+    { answer: "bedtoolscoverage", hints: ['bedtools', 'coverage'] }
+  ];
+  const today = new Date().getDate();
+  const challenge = challenges[today % challenges.length];
+  
+  const hasKeyParts = challenge.hints.every(hint => input.includes(hint));
+  
+  fb.classList.remove('hidden');
+  if (hasKeyParts) { 
+    fb.textContent = '✅ ¡Correcto! Challenge completado 🎉'; 
+    fb.className = 'feedback ok';
+    // Guardar progreso
+    localStorage.setItem('biointeractiva_challenge_' + today, 'completed');
+  }
+  else { fb.textContent = '❌ Revisa la pista e intenta de nuevo'; fb.className = 'feedback err'; }
+};
+
+// Simulador de análisis - ejecutar paso
+window.runSimStep = function(stepNum) {
+  const output = document.getElementById('sim-out-' + stepNum);
+  if (output) {
+    output.classList.remove('hidden');
+    // Marcar paso como completado
+    const stepEl = output.closest('.sim-step');
+    stepEl.classList.add('completed');
+    
+    // Verificar si todos los pasos están completados
+    const allSteps = document.querySelectorAll('.sim-step');
+    const completed = document.querySelectorAll('.sim-step.completed');
+    if (allSteps.length === completed.length) {
+      setTimeout(() => {
+        alert('🎊 ¡Análisis completado! Has practicado un pipeline completo de variantes');
+      }, 500);
+    }
+  }
 };
 
 function attachModuleHandlers(moduleKey) {
@@ -2139,6 +2423,60 @@ window.checkEx6 = function() {
   fb.classList.remove('hidden');
   if (ok) { fb.textContent = '✅ ¡Correcto! 4800000 / 4 = 1,200,000 reads'; fb.className = 'feedback ok'; }
   else { fb.textContent = '❌ Divide entre 4: 4800000 ÷ 4 = ?'; fb.className = 'feedback err'; }
+};
+
+window.checkEx7 = function() {
+  const input = document.getElementById('ex7-input').value.toLowerCase().trim();
+  const fb = document.getElementById('ex7-feedback');
+  const ok = input === 'fastqc archivo.fastq.gz' || input.includes('fastqc');
+  fb.classList.remove('hidden');
+  if (ok) { fb.textContent = '✅ ¡Correcto! FastQC analiza la calidad de lecturas'; fb.className = 'feedback ok'; }
+  else { fb.textContent = '❌ Pista: fastqc archivo.fastq.gz'; fb.className = 'feedback err'; }
+};
+
+window.checkEx8 = function() {
+  const input = document.getElementById('ex8-input').value.toLowerCase().trim();
+  const fb = document.getElementById('ex8-feedback');
+  const ok = input === 'gzip archivo.tsv' || input.includes('gzip');
+  fb.classList.remove('hidden');
+  if (ok) { fb.textContent = '✅ ¡Correcto! gzip comprime y crea .gz'; fb.className = 'feedback ok'; }
+  else { fb.textContent = '❌ Pista: gzip archivo.tsv'; fb.className = 'feedback err'; }
+};
+
+window.checkEx9 = function() {
+  const input = document.getElementById('ex9-input').value.toLowerCase().trim();
+  const fb = document.getElementById('ex9-feedback');
+  const ok = input.includes('samtools flagstat') || input.includes('samtools');
+  fb.classList.remove('hidden');
+  if (ok) { fb.textContent = '✅ ¡Correcto! Muestra % mapeo, duplicados, coverage'; fb.className = 'feedback ok'; }
+  else { fb.textContent = '❌ Pista: samtools flagstat archivo.bam'; fb.className = 'feedback err'; }
+};
+
+window.checkEx10 = function() {
+  const input = document.getElementById('ex10-input').value.toLowerCase().trim();
+  const fb = document.getElementById('ex10-feedback');
+  const ok = input.includes('bcftools') && input.includes('qual>=30');
+  fb.classList.remove('hidden');
+  if (ok) { fb.textContent = '✅ ¡Correcto! Filtra variantes de alta calidad'; fb.className = 'feedback ok'; }
+  else { fb.textContent = '❌ Pista: bcftools view -i \'QUAL>=30\''; fb.className = 'feedback err'; }
+};
+
+window.checkEx11 = function() {
+  const input = document.getElementById('ex11-input').value.toLowerCase().trim();
+  const fb = document.getElementById('ex11-feedback');
+  const ok = input.includes('mkdir -p') || (input.includes('mkdir') && input.includes('data'));
+  fb.classList.remove('hidden');
+  if (ok) { fb.textContent = '✅ ¡Correcto! Estructura de proyecto organizada'; fb.className = 'feedback ok'; }
+  else { fb.textContent = '❌ Pista: mkdir -p proyecto/{data,results,scripts}'; fb.className = 'feedback err'; }
+};
+
+window.checkEx12 = function() {
+  const input = document.getElementById('ex12-input').value.toLowerCase().trim();
+  const fb = document.getElementById('ex12-feedback');
+  const ok = input.includes('wget') && (input.includes('http') || input.includes('.fa') || input.includes('.fasta'));
+  fb.classList.remove('hidden');
+  if (ok) { fb.textContent = '✅ ¡Correcto! Descarga genomas de referencia'; fb.className = 'feedback ok'; }
+  else { fb.textContent = '❌ Pista: wget https://.../genome.fa.gz'; fb.className = 'feedback err'; }
 };
 
 // Terminal virtual interactivo con más comandos
