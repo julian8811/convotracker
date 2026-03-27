@@ -1,0 +1,256 @@
+:root {
+  --bg: #0f172a;
+  --panel: #111827;
+  --soft: #1f2937;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --accent: #22d3ee;
+  --accent-2: #818cf8;
+  --ok: #34d399;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(180deg, var(--bg), #020617);
+  color: var(--text);
+}
+
+.hero {
+  background: radial-gradient(circle at top left, #1e3a8a, #111827 45%, #030712);
+  padding: 2.5rem 1rem;
+  border-bottom: 1px solid #334155;
+}
+
+.hero__content {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+p {
+  line-height: 1.6;
+}
+
+.hero__buttons {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+button {
+  background: var(--accent);
+  border: none;
+  color: #06222b;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid #475569;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.2rem 1rem 2rem;
+}
+
+.progress,
+.modules,
+.content {
+  background: rgba(17, 24, 39, 0.72);
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(3px);
+}
+
+.progress__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.8rem;
+}
+
+.card {
+  background: var(--soft);
+  border: 1px solid #374151;
+  border-radius: 10px;
+  padding: 0.8rem;
+}
+
+.card h3 {
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.card p {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.progress__bar-wrap {
+  margin-top: 1rem;
+  width: 100%;
+  height: 12px;
+  background: #1f2937;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress__bar {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.3s ease;
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.module-card {
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.module-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.module-card p {
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.content.hidden {
+  display: none;
+}
+
+.lesson {
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 0.8rem;
+  background: #0b1220;
+}
+
+.lesson h3 {
+  margin-top: 0;
+  color: var(--accent);
+}
+
+.code {
+  background: #020617;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.7rem;
+  font-family: Consolas, Monaco, monospace;
+  white-space: pre-wrap;
+}
+
+.interactive {
+  margin-top: 0.8rem;
+  padding: 0.8rem;
+  background: #0f172a;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+input[type="text"],
+textarea,
+select {
+  width: 100%;
+  background: #111827;
+  color: var(--text);
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 0.55rem;
+  margin-bottom: 0.6rem;
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.feedback {
+  margin-top: 0.6rem;
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.feedback.ok {
+  border-color: #059669;
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.feedback.err {
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.15);
+}
+
+.quiz-choices {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.quiz-choices button {
+  text-align: left;
+  background: #1f2937;
+  color: #dbeafe;
+  border: 1px solid #475569;
+}
+
+.status {
+  display: inline-block;
+  margin-left: 0.5rem;
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.footer {
+  text-align: center;
+  color: #94a3b8;
+  padding: 1rem;
+}
