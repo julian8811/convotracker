@@ -1658,11 +1658,17 @@ function renderCLIBiblioteca() {
             ${cmds.map(c => {
               const captureFile = cliCaptures[c.cmd.toLowerCase().split(' ')[0]];
               const hasCapture = captureFile !== undefined;
+              const isFavorite = favorites.includes(c.cmd);
               return `
                 <div class="cli-cmd-item" data-cmd="${c.cmd}">
                   <div class="cmd-header-row">
                     <code class="cmd-name">${c.cmd}</code>
                     <code class="cmd-syntax">${c.syntax}</code>
+                    <button class="favorite-btn ${isFavorite ? 'active' : ''}" 
+                            onclick="toggleFavorite('${c.cmd}')" 
+                            title="${isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
+                      ${isFavorite ? '⭐' : '☆'}
+                    </button>
                   </div>
                   <p class="cmd-desc">${c.detail}</p>
                   <p class="cmd-bio"><strong>🐸 Bio:</strong> ${c.bioExample}</p>
@@ -2677,3 +2683,609 @@ function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
+/* ========================================
+   🌡️ ACHIEVEMENTS SYSTEM
+   ======================================== */
+const achievements = [
+  { id: 'first_cmd', name: 'Primer Comando', desc: 'Completa tu primer ejercicio', icon: '🎯', requirement: 1, type: 'exercises' },
+  { id: 'explorer', name: 'Explorador', desc: 'Explora 10 comandos diferentes', icon: '🔍', requirement: 10, type: 'commands' },
+  { id: 'genomist', name: 'Genomista', desc: 'Completa todos los ejercicios de genómica', icon: '🧬', requirement: 12, type: 'exercises' },
+  { id: 'speedster', name: 'Velocista', desc: 'Gana una partida en Speed Run', icon: '⚡', requirement: 1, type: 'speedrun' },
+  { id: 'streak_3', name: 'Racha de 3', desc: '3 días seguidos practicando', icon: '🔥', requirement: 3, type: 'streak' },
+  { id: 'streak_7', name: 'Semana Bio', desc: '7 días seguidos practicando', icon: '🌟', requirement: 7, type: 'streak' },
+  { id: 'bookworm', name: 'Bibliotecario', desc: 'Guarda 5 comandos en favoritos', icon: '📚', requirement: 5, type: 'favorites' },
+  { id: 'quiz_master', name: 'Quiz Master', desc: 'Responde 10 quizzes correctamente', icon: '🧠', requirement: 10, type: 'quiz' },
+  { id: 'terminal_pro', name: 'Terminal Pro', desc: 'Usa 20 comandos en el terminal', icon: '💻', requirement: 20, type: 'terminal' },
+  { id: 'multiplayer', name: 'Competitivo', desc: 'Gana un partido multiplayer', icon: '🏆', requirement: 1, type: 'multiplayer' }
+];
+
+// Estado de achievements
+let achievementsState = JSON.parse(localStorage.getItem('biointeractiva_achievements') || '{}');
+
+// Inicializar achievements
+function initAchievements() {
+  // Crear panel de achievements
+  const panel = document.createElement('div');
+  panel.className = 'achievements-panel';
+  panel.id = 'achievementsPanel';
+  panel.innerHTML = `
+    <h3>🏆 Logros</h3>
+    <button onclick="toggleAchievements()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer">✕</button>
+    <div id="achievementsList"></div>
+  `;
+  document.body.appendChild(panel);
+  
+  // Botón flotante
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'achievements-toggle';
+  toggleBtn.innerHTML = '🏆';
+  toggleBtn.onclick = toggleAchievements;
+  document.body.appendChild(toggleBtn);
+  
+  renderAchievements();
+}
+
+window.toggleAchievements = function() {
+  const panel = document.getElementById('achievementsPanel');
+  panel.classList.toggle('open');
+};
+
+function renderAchievements() {
+  const list = document.getElementById('achievementsList');
+  const stats = getStats();
+  
+  list.innerHTML = achievements.map(ach => {
+    const unlocked = achievementsState[ach.id] || false;
+    let progress = 0;
+    
+    if (ach.type === 'exercises') progress = Math.min(100, (stats.exercisesCompleted / ach.requirement) * 100);
+    else if (ach.type === 'commands') progress = Math.min(100, (stats.commandsViewed / ach.requirement) * 100);
+    else if (ach.type === 'streak') progress = Math.min(100, (stats.streak / ach.requirement) * 100);
+    else if (ach.type === 'favorites') progress = Math.min(100, (stats.favorites / ach.requirement) * 100);
+    else if (ach.type === 'quiz') progress = Math.min(100, (stats.quizCorrect / ach.requirement) * 100);
+    else if (ach.type === 'terminal') progress = Math.min(100, (stats.terminalCommands / ach.requirement) * 100);
+    else if (ach.type === 'speedrun') progress = stats.speedrunWon ? 100 : 0;
+    else if (ach.type === 'multiplayer') progress = stats.multiplayerWon ? 100 : 0;
+    
+    return `
+      <div class="achievement-card ${unlocked ? 'unlocked' : ''}">
+        <div class="achievement-icon">${unlocked ? ach.icon : '🔒'}</div>
+        <div class="achievement-info">
+          <h4>${ach.name}</h4>
+          <p>${ach.desc}</p>
+          ${!unlocked ? `
+            <div class="achievement-progress">
+              <div class="achievement-progress-bar" style="width:${progress}%"></div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Desbloquear achievement
+function unlockAchievement(id) {
+  if (!achievementsState[id]) {
+    achievementsState[id] = true;
+    localStorage.setItem('biointeractiva_achievements', JSON.stringify(achievementsState));
+    
+    // Mostrar notificación
+    const ach = achievements.find(a => a.id === id);
+    if (ach) {
+      showNotification(`🏆 Desbloqueaste: ${ach.name}!`);
+    }
+    
+    renderAchievements();
+  }
+}
+
+// Notificación toast
+function showNotification(message) {
+  const notif = document.createElement('div');
+  notif.style.cssText = `
+    position:fixed;top:20px;left:50%;transform:translateX(-50%);
+    background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;
+    padding:1rem 2rem;border-radius:10px;font-weight:700;z-index:9999;
+    animation:slideDown 0.3s ease-out;
+  `;
+  notif.textContent = message;
+  document.body.appendChild(notif);
+  setTimeout(() => notif.remove(), 3000);
+}
+
+/* ========================================
+   📊 STATISTICS DASHBOARD
+   ======================================== */
+function getStats() {
+  const stats = JSON.parse(localStorage.getItem('biointeractiva_stats') || '{}');
+  return {
+    exercisesCompleted: stats.exercisesCompleted || 0,
+    commandsViewed: stats.commandsViewed || 0,
+    streak: stats.streak || 0,
+    lastPractice: stats.lastPractice || null,
+    favorites: stats.favorites || 0,
+    quizCorrect: stats.quizCorrect || 0,
+    terminalCommands: stats.terminalCommands || 0,
+    speedrunWon: stats.speedrunWon || false,
+    multiplayerWon: stats.multiplayerWon || false,
+    totalTime: stats.totalTime || 0
+  };
+}
+
+function updateStats(action) {
+  const stats = getStats();
+  const today = new Date().toDateString();
+  
+  if (action === 'exercise') stats.exercisesCompleted++;
+  if (action === 'command') stats.commandsViewed++;
+  if (action === 'quiz') stats.quizCorrect++;
+  if (action === 'terminal') stats.terminalCommands++;
+  if (action === 'favorite') stats.favorites++;
+  if (action === 'speedrun') stats.speedrunWon = true;
+  if (action === 'multiplayer') stats.multiplayerWon = true;
+  
+  // Calcular racha
+  if (stats.lastPractice !== today) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (stats.lastPractice === yesterday.toDateString()) {
+      stats.streak++;
+    } else if (stats.lastPractice !== today) {
+      stats.streak = 1;
+    }
+    stats.lastPractice = today;
+  }
+  
+  localStorage.setItem('biointeractiva_stats', JSON.stringify(stats));
+  
+  // Verificar achievements
+  const ach = achievements.find(a => {
+    if (a.type === 'exercises' && stats.exercisesCompleted >= a.requirement) return true;
+    if (a.type === 'commands' && stats.commandsViewed >= a.requirement) return true;
+    if (a.type === 'streak' && stats.streak >= 3 && !achievementsState['streak_3']) unlockAchievement('streak_3');
+    if (a.type === 'streak' && stats.streak >= 7 && !achievementsState['streak_7']) unlockAchievement('streak_7');
+    if (a.type === 'favorites' && stats.favorites >= a.requirement) return true;
+    if (a.type === 'quiz' && stats.quizCorrect >= a.requirement) return true;
+    if (a.type === 'terminal' && stats.terminalCommands >= a.requirement) return true;
+    if (a.type === 'speedrun' && stats.speedrunWon && !achievementsState['speedster']) unlockAchievement('speedster');
+    if (a.type === 'multiplayer' && stats.multiplayerWon && !achievementsState['multiplayer']) unlockAchievement('multiplayer');
+    return false;
+  });
+  
+  if (ach && !achievementsState[ach.id]) unlockAchievement(ach.id);
+  
+  return stats;
+}
+
+function renderStatsPanel() {
+  const stats = getStats();
+  return `
+    <div class="stats-panel">
+      <h3>📊 Tus Estadísticas</h3>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">${stats.exercisesCompleted}</div>
+          <div class="stat-label">Ejercicios</div>
+        </div>
+        <div class="stat-card streak">
+          <div class="stat-value">${stats.streak}</div>
+          <div class="stat-label">Días seguidos</div>
+        </div>
+        <div class="stat-card commands">
+          <div class="stat-value">${stats.commandsViewed}</div>
+          <div class="stat-label">Comandos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${stats.quizCorrect}</div>
+          <div class="stat-label">Quiz correctos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${stats.favorites}</div>
+          <div class="stat-label">Favoritos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${stats.terminalCommands}</div>
+          <div class="stat-label">Terminal</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ========================================
+   💾 FAVORITES / BOOKMARKS
+   ======================================== */
+let favorites = JSON.parse(localStorage.getItem('biointeractiva_favorites') || '[]');
+
+function addFavorite(cmd) {
+  if (!favorites.includes(cmd)) {
+    favorites.push(cmd);
+    localStorage.setItem('biointeractiva_favorites', JSON.stringify(favorites));
+    updateStats('favorite');
+    showNotification(`⭐ ${cmd} añadido a favoritos`);
+    renderFavorites();
+  }
+}
+
+function removeFavorite(cmd) {
+  favorites = favorites.filter(f => f !== cmd);
+  localStorage.setItem('biointeractiva_favorites', JSON.stringify(favorites));
+  renderFavorites();
+}
+
+function renderFavorites() {
+  return `
+    <div class="favorites-section">
+      <h3>⭐ Comandos Favoritos</h3>
+      ${favorites.length > 0 ? `
+        <div class="favorites-grid">
+          ${favorites.map(cmd => `
+            <div class="favorite-cmd">
+              <code>${cmd}</code>
+              <button class="favorite-remove" onclick="removeFavorite('${cmd}')">✕</button>
+            </div>
+          `).join('')}
+        </div>
+      ` : '<p style="color:#94a3b8">No hay favoritos aún. ¡Guarda comandos desde la biblioteca!'</p>}
+    </div>
+  `;
+}
+
+window.addFavorite = addFavorite;
+window.removeFavorite = removeFavorite;
+
+function toggleFavorite(cmd) {
+  if (favorites.includes(cmd)) {
+    removeFavorite(cmd);
+  } else {
+    addFavorite(cmd);
+  }
+  // Recargar la biblioteca para actualizar los botones
+  if (document.getElementById('cliTabBiblioteca')) {
+    document.getElementById('cliTabBiblioteca').innerHTML = renderCLIBiblioteca();
+  }
+}
+
+window.toggleFavorite = toggleFavorite;
+
+/* ========================================
+   🎮 GAME MODE - SPEED RUN
+   ======================================== */
+let speedrunState = {
+  active: false,
+  score: 0,
+  timeLeft: 60,
+  currentQuestion: 0,
+  questions: []
+};
+
+const speedrunQuestions = [
+  { q: "¿Qué comando cuenta líneas?", options: ["wc -l", "count", "lines"], answer: 0 },
+  { q: "Flag -h en ls significa?", options: ["legible", "ocultos", "fecha"], answer: 0 },
+  { q: "¿Cómo ver .gz?", options: ["zcat", "cat", "unzip"], answer: 0 },
+  { q: "¿samtools flagstat?", options: ["estadísticas mapeo", "convertir BAM", "indexar"], answer: 0 },
+  { q: "¿Formato VCF?", options: ["Variant Call Format", "Video", "Vector"], answer: 0 },
+  { q: "¿FastQ tiene?", options: ["4 líneas", "2 líneas", "1 línea"], answer: 0 },
+  { q: "¿bcftools para?", options: ["variantes", "alineamiento", "ensamblaje"], answer: 0 },
+  { q: "¿grep ^> busca?", options: ["encabezados FASTA", "secuencias", "calidad"], answer: 0 },
+  { q: "¿mkdir -p?", options: ["directorios anidados", "archivos", "permisos"], answer: 0 },
+  { q: "¿zcat vs gzip?", options: ["ver/comprimir", "igual", "inverso"], answer: 0 }
+];
+
+function startSpeedRun() {
+  speedrunState = {
+    active: true,
+    score: 0,
+    timeLeft: 60,
+    currentQuestion: 0,
+    questions: [...speedrunQuestions].sort(() => Math.random() - 0.5).slice(0, 5)
+  };
+  
+  const modal = document.createElement('div');
+  modal.className = 'speedrun-modal';
+  modal.id = 'speedrunModal';
+  modal.innerHTML = renderSpeedRunContent();
+  document.body.appendChild(modal);
+  
+  speedrunState.timer = setInterval(() => {
+    speedrunState.timeLeft--;
+    document.getElementById('speedrunTimer').textContent = speedrunState.timeLeft;
+    
+    if (speedrunState.timeLeft <= 0) {
+      endSpeedRun();
+    }
+  }, 1000);
+  
+  renderSpeedRunQuestion();
+}
+
+function renderSpeedRunContent() {
+  return `
+    <div class="speedrun-content">
+      <h2>⚡ Speed Run</h2>
+      <p>¡Responde 5 preguntas en 60 segundos!</p>
+      <div class="speedrun-timer" id="speedrunTimer">60</div>
+      <div id="speedrunQuestion"></div>
+      <div class="speedrun-score">Puntaje: <span id="speedrunScore">0</span></div>
+      <button class="speedrun-btn" onclick="endSpeedRun()">Terminar</button>
+    </div>
+  `;
+}
+
+function renderSpeedRunQuestion() {
+  const q = speedrunState.questions[speedrunState.currentQuestion];
+  if (!q) {
+    endSpeedRun();
+    return;
+  }
+  
+  document.getElementById('speedrunQuestion').innerHTML = `
+    <div class="speedrun-question">
+      <p>${q.q}</p>
+      <div class="speedrun-options">
+        ${q.options.map((opt, i) => `
+          <button class="speedrun-option" onclick="answerSpeedRun(${i})">${opt}</button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+window.answerSpeedRun = function(answerIndex) {
+  const q = speedrunState.questions[speedrunState.currentQuestion];
+  const isCorrect = answerIndex === q.answer;
+  
+  if (isCorrect) {
+    speedrunState.score += 20;
+    speedrunState.timeLeft += 5; // Bonus time
+    document.getElementById('speedrunScore').textContent = speedrunState.score;
+  }
+  
+  speedrunState.currentQuestion++;
+  renderSpeedRunQuestion();
+};
+
+function endSpeedRun() {
+  clearInterval(speedrunState.timer);
+  speedrunState.active = false;
+  
+  if (speedrunState.score >= 60) {
+    updateStats('speedrun');
+    showNotification(`🎉 Speed Run completado! Puntuación: ${speedrunState.score}`);
+  }
+  
+  const modal = document.getElementById('speedrunModal');
+  if (modal) {
+    modal.innerHTML = `
+      <div class="speedrun-content">
+        <h2>${speedrunState.score >= 60 ? '🎉 Ganaste!' : '⏰ Tiempo!'}</h2>
+        <div class="speedrun-timer">${speedrunState.score}</div>
+        <p>Puntuación final</p>
+        <button class="speedrun-btn" onclick="document.getElementById('speedrunModal').remove()">Cerrar</button>
+        <button class="speedrun-btn" onclick="document.getElementById('speedrunModal').remove();startSpeedRun()">Jugar de nuevo</button>
+      </div>
+    `;
+  }
+}
+
+window.startSpeedRun = startSpeedRun;
+window.endSpeedRun = endSpeedRun;
+
+/* ========================================
+   👥 MULTIPLAYER LOCAL
+   ======================================== */
+let multiplayerState = {
+  player1: 0,
+  player2: 0,
+  currentPlayer: 1,
+  rounds: 0,
+  maxRounds: 5,
+  questions: []
+};
+
+function startMultiplayer() {
+  multiplayerState = {
+    player1: 0,
+    player2: 0,
+    currentPlayer: 1,
+    rounds: 0,
+    maxRounds: 5,
+    questions: [...speedrunQuestions].sort(() => Math.random() - 0.5)
+  };
+  
+  const container = document.getElementById('moduleContent');
+  container.innerHTML = renderMultiplayerContent();
+}
+
+function renderMultiplayerContent() {
+  return `
+    <div class="multiplayer-panel">
+      <h3>👥 Multijugador Local</h3>
+      <p>¡Compite contra un amigo! Cada jugador responde preguntas alternadamente.</p>
+      
+      <div class="player-cards">
+        <div class="player-card" id="p1Card">
+          <h4>Jugador 1</h4>
+          <div class="score" id="p1Score">0</div>
+        </div>
+        <div class="player-card" id="p2Card">
+          <h4>Jugador 2</h4>
+          <div class="score" id="p2Score">0</div>
+        </div>
+      </div>
+      
+      <div id="multiplayerQuestion"></div>
+      
+      <button class="speedrun-btn" onclick="startMultiplayer()">Nueva partida</button>
+    </div>
+    ${renderStatsPanel()}
+  `;
+}
+
+function renderMultiplayerQuestion() {
+  if (multiplayerState.rounds >= multiplayerState.maxRounds) {
+    endMultiplayer();
+    return;
+  }
+  
+  const q = multiplayerState.questions[multiplayerState.rounds];
+  const currentCard = multiplayerState.currentPlayer === 1 ? 'p1Card' : 'p2Card';
+  
+  document.getElementById('p1Card').classList.remove('winner');
+  document.getElementById('p2Card').classList.remove('winner');
+  document.getElementById(currentCard).style.borderColor = '#22d3ee';
+  
+  document.getElementById('multiplayerQuestion').innerHTML = `
+    <p style="text-align:center;color:#fff;margin:1rem 0">Turno: Jugador ${multiplayerState.currentPlayer}</p>
+    <div class="speedrun-question">
+      <p>${q.q}</p>
+      <div class="speedrun-options">
+        ${q.options.map((opt, i) => `
+          <button class="speedrun-option" onclick="answerMultiplayer(${i})">${opt}</button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+window.answerMultiplayer = function(answerIndex) {
+  const q = multiplayerState.questions[multiplayerState.rounds];
+  const isCorrect = answerIndex === q.answer;
+  
+  if (isCorrect) {
+    if (multiplayerState.currentPlayer === 1) {
+      multiplayerState.player1 += 10;
+      document.getElementById('p1Score').textContent = multiplayerState.player1;
+    } else {
+      multiplayerState.player2 += 10;
+      document.getElementById('p2Score').textContent = multiplayerState.player2;
+    }
+  }
+  
+  multiplayerState.currentPlayer = multiplayerState.currentPlayer === 1 ? 2 : 1;
+  multiplayerState.rounds++;
+  renderMultiplayerQuestion();
+};
+
+function endMultiplayer() {
+  let winner = null;
+  if (multiplayerState.player1 > multiplayerState.player2) {
+    winner = 'Jugador 1';
+    updateStats('multiplayer');
+  } else if (multiplayerState.player2 > multiplayerState.player1) {
+    winner = 'Jugador 2';
+    updateStats('multiplayer');
+  }
+  
+  document.getElementById('p1Card').classList.remove('winner');
+  document.getElementById('p2Card').classList.remove('winner');
+  
+  if (winner) {
+    document.getElementById(winner === 'Jugador 1' ? 'p1Card' : 'p2Card').classList.add('winner');
+  }
+  
+  document.getElementById('multiplayerQuestion').innerHTML = `
+    <div style="text-align:center;margin:2rem 0">
+      <h3 style="color:#fbbf24">${winner ? '🎉 ' + winner + ' gana!' : '🤝 Empate!'}</h3>
+      <p style="color:#fff">Puntuación final: ${multiplayerState.player1} - ${multiplayerState.player2})</p>
+    </div>
+  `;
+}
+
+window.startMultiplayer = startMultiplayer;
+
+/* ========================================
+   🔄 FAB MENU FOR MOBILE
+   ======================================== */
+function initFabMenu() {
+  const fab = document.createElement('div');
+  fab.className = 'fab-menu';
+  fab.innerHTML = `
+    <button class="fab-game" onclick="startSpeedRun()" title="Speed Run">⚡</button>
+    <button class="fab-stats" onclick="showStatsPanel()" title="Estadísticas">📊</button>
+    <button class="fab-favorites" onclick="showFavoritesPanel()" title="Favoritos">⭐</button>
+  `;
+  document.body.appendChild(fab);
+}
+
+window.showStatsPanel = function() {
+  const container = document.getElementById('moduleContent');
+  container.classList.remove('hidden');
+  container.innerHTML = `
+    <button class="back-btn" onclick="renderModulesList()" style="margin-bottom:1rem">← Volver</button>
+    ${renderStatsPanel()}
+  `;
+};
+
+window.showFavoritesPanel = function() {
+  const container = document.getElementById('moduleContent');
+  container.classList.remove('hidden');
+  container.innerHTML = `
+    <button class="back-btn" onclick="renderModulesList()" style="margin-bottom:1rem">← Volver</button>
+    ${renderFavorites()}
+  `;
+};
+
+/* ========================================
+   🔄 OFFLINE MODE
+   ======================================== */
+function initOfflineMode() {
+  // Registrar service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {
+      console.log('SW no disponible');
+    });
+  }
+  
+  // Indicador online/offline
+  const indicator = document.createElement('div');
+  indicator.className = 'offline-indicator online-indicator';
+  indicator.id = 'offlineIndicator';
+  indicator.innerHTML = '🌐 Online';
+  document.body.appendChild(indicator);
+  
+  window.addEventListener('online', () => {
+    indicator.className = 'offline-indicator online-indicator';
+    indicator.innerHTML = '🌐 Online';
+  });
+  
+  window.addEventListener('offline', () => {
+    indicator.className = 'offline-indicator show';
+    indicator.innerHTML = '📴 Modo offline';
+  });
+}
+
+/* ========================================
+   INITIALIZE ALL FEATURES
+   ======================================== */
+document.addEventListener('DOMContentLoaded', function() {
+  initAchievements();
+  initFabMenu();
+  initOfflineMode();
+  
+  // Agregar botón de multiplayer en el menú
+  const moduleGrid = document.querySelector('.module-grid');
+  if (moduleGrid) {
+    const multiBtn = document.createElement('article');
+    multiBtn.className = 'module-card';
+    multiBtn.innerHTML = `
+      <h3>👥 Multijugador</h3>
+      <p>Compite contra un amigo en preguntas de bioinformática.</p>
+      <button class="openModuleBtn" onclick="startMultiplayer()">Iniciar partida</button>
+    `;
+    moduleGrid.appendChild(multiBtn);
+  }
+  
+  // Agregar botón Speed Run en el header
+  const heroButtons = document.querySelector('.hero__buttons');
+  if (heroButtons) {
+    const speedrunBtn = document.createElement('button');
+    speedrunBtn.className = 'ghost';
+    speedrunBtn.textContent = '⚡ Speed Run';
+    speedrunBtn.onclick = startSpeedRun;
+    speedrunBtn.style.marginTop = '0.5rem';
+    heroButtons.appendChild(speedrunBtn);
+  }
+});
