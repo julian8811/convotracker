@@ -1,16 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 120">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 140">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#0f172a"/>
       <stop offset="100%" style="stop-color:#020617"/>
     </linearGradient>
   </defs>
-  <rect width="600" height="120" fill="url(#bg)"/>
+  <rect width="600" height="140" fill="url(#bg)"/>
   <rect x="10" y="10" width="580" height="25" rx="8" fill="#1e293b"/>
   <circle cx="30" cy="22" r="6" fill="#ef4444"/>
   <circle cx="50" cy="22" r="6" fill="#f59e0b"/>
   <circle cx="70" cy="22" r="6" fill="#22c55e"/>
   <text x="100" y="27" fill="#94a3b8" font-family="Consolas,monospace" font-size="12">wget</text>
-  <text x="20" y="60" fill="#22d3ee" font-family="Consolas,monospace" font-size="14">$ comando de ejemplo</text>
-  <text x="20" y="90" fill="#94a3b8" font-family="Consolas,monospace" font-size="12">Salida de ejemplo</text>
+  <text x="20" y="60" fill="#22d3ee" font-family="Consolas,monospace" font-size="14">$ wget https://ftp.ebi.ac.uk/genomes.fa.gz</text>
+  <text x="20" y="90" fill="#34d399" font-family="Consolas,monospace" font-size="12">--2024-01-15 14:30:00--  ...genomes.fa.gz</text>
+  <text x="20" y="115" fill="#fbbf24" font-family="Consolas,monospace" font-size="12">Length: 158M (158M) [application/x-gzip]</text>
+  <text x="20" y="140" fill="#94a3b8" font-family="Consolas,monospace" font-size="12">Saving to: 'genomes.fa.gz'</text>
 </svg>

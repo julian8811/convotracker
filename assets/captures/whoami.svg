@@ -10,8 +10,8 @@
   <circle cx="30" cy="22" r="6" fill="#ef4444"/>
   <circle cx="50" cy="22" r="6" fill="#f59e0b"/>
   <circle cx="70" cy="22" r="6" fill="#22c55e"/>
-  <text x="100" y="27" fill="#94a3b8" font-family="Consolas,monospace" font-size="12">chown</text>
-  <text x="20" y="60" fill="#22d3ee" font-family="Consolas,monospace" font-size="14">$ sudo chown bioinfo:bioinformatics resultados/*.vcf</text>
-  <text x="20" y="90" fill="#34d399" font-family="Consolas,monospace" font-size="12">(cambia propietario y grupo)</text>
-  <text x="20" y="120" fill="#94a3b8" font-family="Consolas,monospace" font-size="12">útil en servidores multiusuario</text>
+  <text x="100" y="27" fill="#94a3b8" font-family="Consolas,monospace" font-size="12">whoami</text>
+  <text x="20" y="60" fill="#22d3ee" font-family="Consolas,monospace" font-size="14">$ whoami</text>
+  <text x="20" y="90" fill="#f472b6" font-family="Consolas,monospace" font-size="14">bioinfo</text>
+  <text x="20" y="120" fill="#94a3b8" font-family="Consolas,monospace" font-size="12">Muestra el usuario actual</text>
 </svg>

@@ -94,12 +94,22 @@ const cliCaptures = {
   
   // Permisos
   'chmod': 'captures/chmod.svg',
+  'chmod +x': 'captures/chmod.svg',
   'chown': 'captures/chown.svg',
+  
+  // Utilidades del sistema
+  'history': 'captures/history.svg',
+  'history | tail': 'captures/history.svg',
+  'uname': 'captures/uname.svg',
+  'uname -r': 'captures/uname.svg',
+  'date': 'captures/date_cmd.svg',
+  'whoami': 'captures/whoami.svg',
   
   // Genómica
   'samtools': 'captures/samtools-flagstat.svg',
   'samtools flagstat': 'captures/samtools-flagstat.svg',
   'bcftools': 'captures/bcftools.svg',
+  'bcftools view': 'captures/bcftools.svg',
   'fastqc': 'captures/fastqc.svg'
 };
 
