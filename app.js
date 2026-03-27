@@ -2647,22 +2647,34 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================
 
 function bindGlobalEvents() {
-  document.getElementById("goToModulesBtn").addEventListener("click", () => {
-    document.getElementById("modules").scrollIntoView({ behavior: "smooth" });
-  });
-
-  document.getElementById("resetProgressBtn").addEventListener("click", () => {
-    state.completed = { cli: false, db: false, genomics: false, phylo: false };
-    state.score = 0;
-    saveState();
-    updateProgressUI();
-    alert("Progreso reiniciado.");
-  });
-
-  document.querySelectorAll(".openModuleBtn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      renderModule(btn.dataset.module);
+  // Botón explorar módulos
+  const goToModulesBtn = document.getElementById("goToModulesBtn");
+  if (goToModulesBtn) {
+    goToModulesBtn.addEventListener("click", () => {
+      document.getElementById("modules").scrollIntoView({ behavior: "smooth" });
     });
+  }
+
+  // Botón reiniciar progreso
+  const resetProgressBtn = document.getElementById("resetProgressBtn");
+  if (resetProgressBtn) {
+    resetProgressBtn.addEventListener("click", () => {
+      state.completed = { cli: false, db: false, genomics: false, phylo: false };
+      state.score = 0;
+      saveState();
+      updateProgressUI();
+      alert("Progreso reiniciado.");
+    });
+  }
+
+  // Botones de abrir módulo
+  document.querySelectorAll(".openModuleBtn").forEach((btn) => {
+    const module = btn.dataset.module;
+    if (module) {
+      btn.onclick = function() {
+        renderModule(module);
+      };
+    }
   });
 }
 
@@ -2682,11 +2694,56 @@ function init() {
   console.log("BioInteractiva v2 - CLI Module Enhanced");
 }
 
-document.addEventListener("DOMContentLoaded", init);
-
-/* ========================================
-   🌡️ ACHIEVEMENTS SYSTEM
-   ======================================== */
+// Inicialización completa
+document.addEventListener('DOMContentLoaded', function() {
+  // Inicializaciones básicas
+  init();
+  
+  // Inicializaciones de nuevas features
+  initAchievements();
+  initFabMenu();
+  initOfflineMode();
+  
+  // Agregar botón de multiplayer en el menú
+  const moduleGrid = document.querySelector('.module-grid');
+  if (moduleGrid) {
+    const multiBtn = document.createElement('article');
+    multiBtn.className = 'module-card';
+    multiBtn.innerHTML = `
+      <h3>👥 Multijugador</h3>
+      <p>Compite contra un amigo en preguntas de bioinformática.</p>
+      <button class="openModuleBtn" data-module="multiplayer">Iniciar partida</button>
+    `;
+    moduleGrid.appendChild(multiBtn);
+    
+    // Re-bindear eventos para el nuevo botón
+    document.querySelectorAll(".openModuleBtn").forEach((btn) => {
+      const module = btn.dataset.module;
+      if (module) {
+        btn.onclick = function() {
+          if (module === 'multiplayer') {
+            startMultiplayer();
+          } else {
+            renderModule(module);
+          }
+        };
+      }
+    });
+  }
+  
+  // Agregar botón Speed Run en el header
+  const heroButtons = document.querySelector('.hero__buttons');
+  if (heroButtons) {
+    const speedrunBtn = document.createElement('button');
+    speedrunBtn.className = 'ghost';
+    speedrunBtn.textContent = '⚡ Speed Run';
+    speedrunBtn.onclick = startSpeedRun;
+    speedrunBtn.style.marginTop = '0.5rem';
+    heroButtons.appendChild(speedrunBtn);
+  }
+  
+  console.log('BioInteractiva fully initialized');
+});
 const achievements = [
   { id: 'first_cmd', name: 'Primer Comando', desc: 'Completa tu primer ejercicio', icon: '🎯', requirement: 1, type: 'exercises' },
   { id: 'explorer', name: 'Explorador', desc: 'Explora 10 comandos diferentes', icon: '🔍', requirement: 10, type: 'commands' },
@@ -3286,6 +3343,6 @@ document.addEventListener('DOMContentLoaded', function() {
     speedrunBtn.textContent = '⚡ Speed Run';
     speedrunBtn.onclick = startSpeedRun;
     speedrunBtn.style.marginTop = '0.5rem';
-    heroButtons.appendChild(speedrunBtn);
+  heroButtons.appendChild(speedrunBtn);
   }
 });
