@@ -209,7 +209,7 @@ const moduleData = {
   cli: {
     title: "Linea de comando para bioinformatica",
     description:
-      "Modulo extenso de linea de comando para bioinformatica: fundamentos, organizacion de proyectos, manipulacion de FASTA/FASTQ, filtrado de tablas, automatizacion y buenas practicas reproducibles.",
+      "Modulo extenso de linea de comando para bioinformatica, alimentado con una ruta de aprendizaje inspirada en recursos de GitHub y un temario estructurado por niveles similar a un curso profesional.",
     lesson: `
 <div class="lesson">
   <h3>Guia completa: linea de comando aplicada a bioinformatica</h3>
@@ -240,6 +240,34 @@ grep -v "^>" secuencias.fasta | tr -d "\\n" | wc -c   # cuenta nucleotidos total
 </div>
 
 <div class="lesson">
+  <h3>Ruta de aprendizaje estructurada (base externa integrada)</h3>
+  <p>Este modulo integra dos fuentes para organizar el estudio: una ruta abierta de comandos en GitHub y un temario progresivo de curso de terminal. A partir de ellas, esta plataforma propone un camino orientado a bioinformatica.</p>
+  <ol>
+    <li><b>Fundamentos:</b> que es terminal, tipos de comandos, navegacion y rutas.</li>
+    <li><b>Archivos y texto:</b> crear/copiar/mover/eliminar, inspeccion con head/tail/less, busqueda con grep y find.</li>
+    <li><b>Redireccion y automatizacion:</b> pipes, redireccion, operadores de control, alias y scripts basicos.</li>
+    <li><b>Sistema y procesos:</b> permisos, variables de entorno, procesos foreground/background y monitoreo.</li>
+    <li><b>Utilidades avanzadas:</b> compresion tar/gzip, sesiones persistentes, personalizacion del shell.</li>
+    <li><b>Aplicacion bioinformatica:</b> manejo de FASTA/FASTQ/VCF, trazabilidad de pipelines y reportes reproducibles.</li>
+  </ol>
+  <div class="code">Objetivo final del modulo:
+Ser capaz de recibir datos crudos, inspeccionarlos, filtrarlos, ejecutar un flujo reproducible
+y documentar cada paso de analisis usando linea de comando.</div>
+</div>
+
+<div class="lesson">
+  <h3>Temario recomendado para dominar terminal</h3>
+  <ul>
+    <li><b>Introduccion:</b> terminal, shell, comandos basicos, uso en Windows con entornos Unix-like.</li>
+    <li><b>Busqueda en terminal:</b> wildcards, grep, find, filtros por nombre/extension/atributos.</li>
+    <li><b>Funcionamiento interno:</b> tipos de comandos, redirecciones, encadenamiento y alias permanentes.</li>
+    <li><b>Sistema operativo:</b> permisos, variables de entorno, gestion de procesos (ps/top/kill).</li>
+    <li><b>Utilidades:</b> compresion (tar/gzip), editores de texto y optimizacion del entorno.</li>
+  </ul>
+  <p>En esta plataforma, cada bloque incluye ejemplos aplicados a archivos biologicos para convertir teoria en practica real.</p>
+</div>
+
+<div class="lesson">
   <h3>Catalogo detallado de comandos (explorador interactivo)</h3>
   <p>Debajo podras seleccionar un comando para ver sintaxis, explicacion y ejemplo bioinformatico. Incluye comandos de navegacion, archivos, inspeccion, busqueda, procesamiento, tablas, compresion y permisos.</p>
 </div>
@@ -256,6 +284,26 @@ grep -v "^>" secuencias.fasta | tr -d "\\n" | wc -c   # cuenta nucleotidos total
 </div>
 `,
     interactive: `
+<div class="interactive">
+  <h4>Recursos base usados en este modulo</h4>
+  <p><b>Ruta GitHub:</b> <a href="https://github.com/guides4all/Ruta-Terminal-Linea-comandos" target="_blank" rel="noreferrer">guides4all/Ruta-Terminal-Linea-comandos</a></p>
+  <p><b>Curso estructurado:</b> <a href="https://platzi.com/cursos/terminal/" target="_blank" rel="noreferrer">Curso de Introduccion a la Terminal y Linea de Comandos (Platzi)</a></p>
+  <p>Estos recursos se usan como referencia para el orden pedagogico del contenido.</p>
+</div>
+
+<div class="interactive">
+  <h4>Planificador de estudio CLI (segun tiempo semanal)</h4>
+  <label for="cliPlanHours">Horas por semana que puedes dedicar:</label>
+  <select id="cliPlanHours">
+    <option value="2">2 horas/semana</option>
+    <option value="4">4 horas/semana</option>
+    <option value="6">6 horas/semana</option>
+    <option value="8">8+ horas/semana</option>
+  </select>
+  <button id="cliPlanBtn">Generar plan</button>
+  <div id="cliPlanOutput" class="code">Selecciona tus horas y genera una ruta de trabajo.</div>
+</div>
+
 <div class="interactive">
   <h4>Explorador de comandos Unix/Linux para bioinformatica</h4>
   <label for="cliCommandSelect">Selecciona un comando para ver explicacion detallada:</label>
@@ -486,6 +534,49 @@ function setFeedback(el, ok, msg) {
 
 function attachModuleHandlers(moduleKey) {
   if (moduleKey === "cli") {
+    const planBtn = document.getElementById("cliPlanBtn");
+    const planHours = document.getElementById("cliPlanHours");
+    const planOutput = document.getElementById("cliPlanOutput");
+    planBtn.addEventListener("click", () => {
+      const h = Number(planHours.value);
+      let plan = "";
+      if (h <= 2) {
+        plan =
+          "Plan sugerido (2h/semana, 10 semanas):\n" +
+          "Sem 1-2: navegacion, archivos y rutas.\n" +
+          "Sem 3-4: grep/find/head/tail con archivos FASTA/FASTQ.\n" +
+          "Sem 5-6: redireccion, pipes y filtros con awk/cut/sort.\n" +
+          "Sem 7-8: permisos, procesos y compresion.\n" +
+          "Sem 9-10: mini pipeline reproducible con bitacora.";
+      } else if (h <= 4) {
+        plan =
+          "Plan sugerido (4h/semana, 7 semanas):\n" +
+          "Sem 1: fundamentos + estructura de proyecto.\n" +
+          "Sem 2: manipulacion de archivos biologicos.\n" +
+          "Sem 3: busqueda y filtrado (grep/find/awk).\n" +
+          "Sem 4: redireccion, pipes, alias.\n" +
+          "Sem 5: permisos, variables y procesos.\n" +
+          "Sem 6: compresion y automatizacion por lotes.\n" +
+          "Sem 7: proyecto final CLI para bioinformatica.";
+      } else if (h <= 6) {
+        plan =
+          "Plan sugerido (6h/semana, 5 semanas):\n" +
+          "Semana 1: fundamentos, archivos, busqueda.\n" +
+          "Semana 2: texto/tablas (grep, awk, cut, sort, uniq).\n" +
+          "Semana 3: shell avanzado (pipes, redireccion, alias, scripts).\n" +
+          "Semana 4: sistema (permisos, procesos, logs, compresion).\n" +
+          "Semana 5: pipeline bioinformatico completo y documentado.";
+      } else {
+        plan =
+          "Plan intensivo (8+ h/semana, 3-4 semanas):\n" +
+          "Bloque A: fundamentos y comandos core.\n" +
+          "Bloque B: procesamiento masivo de FASTA/FASTQ/VCF.\n" +
+          "Bloque C: automatizacion con scripts + reportes reproducibles.\n" +
+          "Bloque D: proyecto final con validacion y control de calidad.";
+      }
+      planOutput.textContent = plan;
+    });
+
     const commandSelect = document.getElementById("cliCommandSelect");
     const commandDetails = document.getElementById("cliCommandDetails");
     commandSelect.innerHTML = cliCommandCatalog
