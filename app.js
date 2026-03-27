@@ -202,8 +202,157 @@ const cliCommandCatalog = [
     detail:
       "Muestra comandos usados. Facilita reproducibilidad y documentacion del analisis.",
     bioExample: "history > bitacora_comandos.txt"
+  },
+  {
+    cmd: "uname",
+    category: "Sistema",
+    syntax: "uname -r",
+    detail:
+      "Muestra informacion del sistema y kernel. Util para documentar el entorno de ejecucion.",
+    bioExample: "uname -r  # registrar version de kernel en el reporte"
+  },
+  {
+    cmd: "date",
+    category: "Sistema",
+    syntax: "date",
+    detail:
+      "Imprime fecha y hora actual. Se usa para sellar temporalmente ejecuciones o logs.",
+    bioExample: "date >> logs/pipeline.log"
+  },
+  {
+    cmd: "df",
+    category: "Disco",
+    syntax: "df -h",
+    detail:
+      "Muestra el espacio libre y usado en discos montados en formato legible.",
+    bioExample: "df -h  # validar espacio antes de ensamblaje"
+  },
+  {
+    cmd: "du",
+    category: "Disco",
+    syntax: "du -sh carpeta",
+    detail:
+      "Calcula el tamano de directorios para detectar resultados pesados y limpiar.",
+    bioExample: "du -sh resultados/*"
+  },
+  {
+    cmd: "ps",
+    category: "Procesos",
+    syntax: "ps -eaf",
+    detail:
+      "Lista procesos activos. Ayuda a revisar si una herramienta de bioinformatica sigue corriendo.",
+    bioExample: "ps -eaf | grep fastqc"
+  },
+  {
+    cmd: "top",
+    category: "Procesos",
+    syntax: "top",
+    detail:
+      "Monitor en vivo de CPU y memoria. Ideal para vigilar ejecuciones pesadas.",
+    bioExample: "top  # monitorear consumo durante alineamiento"
+  },
+  {
+    cmd: "kill",
+    category: "Procesos",
+    syntax: "kill -9 PID",
+    detail:
+      "Termina procesos colgados o que consumen recursos excesivos.",
+    bioExample: "kill -9 24510"
+  },
+  {
+    cmd: "free",
+    category: "Procesos",
+    syntax: "free -m",
+    detail:
+      "Muestra estado de memoria RAM en megabytes para diagnostico rapido.",
+    bioExample: "free -m"
+  },
+  {
+    cmd: "whoami",
+    category: "Sistema",
+    syntax: "whoami",
+    detail:
+      "Indica el usuario actual en terminal, util al trabajar en servidores compartidos.",
+    bioExample: "whoami"
+  },
+  {
+    cmd: "zip",
+    category: "Compresion",
+    syntax: "zip -r archivo.zip carpeta",
+    detail:
+      "Comprime multiples archivos en formato zip para compartir resultados.",
+    bioExample: "zip -r entrega_informe.zip resultados_finales/"
+  },
+  {
+    cmd: "unzip",
+    category: "Compresion",
+    syntax: "unzip archivo.zip",
+    detail:
+      "Descomprime paquetes zip recibidos desde colaboradores o repositorios.",
+    bioExample: "unzip dataset_control.zip"
+  },
+  {
+    cmd: "ln -s",
+    category: "Archivos",
+    syntax: "ln -s origen enlace",
+    detail:
+      "Crea enlaces simbolicos para organizar pipelines sin duplicar archivos pesados.",
+    bioExample: "ln -s /datos/raw/PAC001_R1.fastq.gz raw_data/PAC001_R1.fastq.gz"
+  },
+  {
+    cmd: "chown",
+    category: "Permisos",
+    syntax: "chown usuario:grupo archivo",
+    detail:
+      "Cambia propietario y grupo de archivos. Frecuente en servidores Linux multiusuario.",
+    bioExample: "sudo chown bioinfo:bioinfo resultados/*.vcf"
+  },
+  {
+    cmd: "chgrp",
+    category: "Permisos",
+    syntax: "chgrp grupo archivo",
+    detail:
+      "Cambia grupo asociado a archivos para trabajo colaborativo.",
+    bioExample: "chgrp laboratorio shared/tabla_variantes.tsv"
+  },
+  {
+    cmd: "wget",
+    category: "Red",
+    syntax: "wget URL",
+    detail:
+      "Descarga archivos desde internet o repositorios remotos en modo terminal.",
+    bioExample: "wget https://ejemplo.org/referencia.fasta.gz"
+  },
+  {
+    cmd: "curl",
+    category: "Red",
+    syntax: "curl -L URL -o archivo",
+    detail:
+      "Permite descargar datos y consultar APIs bioinformaticas por HTTP.",
+    bioExample: "curl -L https://ejemplo.org/genes.tsv -o genes.tsv"
+  },
+  {
+    cmd: "sort | uniq",
+    category: "Tabulares",
+    syntax: "sort archivo | uniq -c",
+    detail:
+      "Combinacion clasica para resumir ocurrencias de valores repetidos.",
+    bioExample: "cut -f3 muestras.tsv | sort | uniq -c"
   }
 ];
+
+const cliSimulatedOutput = {
+  "pwd": "/home/user/proyecto_bioinfo",
+  "ls -lah": "drwxr-xr-x raw_data\n-rw-r--r-- metadata.tsv\n-rw-r--r-- README.md\ndrwxr-xr-x results",
+  "grep \"^>\" secuencias.fasta | wc -l": "245",
+  "find . -name \"*.fastq.gz\"": "./raw_data/PAC001_R1.fastq.gz\n./raw_data/PAC001_R2.fastq.gz\n./raw_data/PAC002_R1.fastq.gz",
+  "zcat muestra.fastq.gz | head -n 8": "@SEQ_ID\nGATCTGACTGAT\n+\nIIIIIIIIIIII",
+  "df -h": "Filesystem      Size  Used Avail Use%\n/dev/sda2       250G  120G  118G  51%",
+  "du -sh resultados": "1.8G    resultados",
+  "ps -eaf | grep fastqc": "user  18210  1  35  fastqc PAC001_R1.fastq.gz",
+  "free -m": "Mem: 15872 total, 7820 used, 7521 free",
+  "tar -czvf resultados.tar.gz resultados/": "resultados/qc/\nresultados/variants/\nresultados/logs/"
+};
 
 const moduleData = {
   cli: {
@@ -268,8 +417,31 @@ y documentar cada paso de analisis usando linea de comando.</div>
 </div>
 
 <div class="lesson">
+  <h3>Capturas de comandos (visual)</h3>
+  <p>Estas capturas didacticas muestran como se ve una sesion de trabajo real en terminal para bioinformatica: inspeccion de lecturas, filtrado, monitoreo y compresion.</p>
+  <div class="cli-gallery">
+    <figure class="cli-shot">
+      <img src="assets/cli-screenshot-1.svg" alt="Captura terminal navegacion e inspeccion">
+      <figcaption>Navegacion e inspeccion inicial de archivos FASTQ.</figcaption>
+    </figure>
+    <figure class="cli-shot">
+      <img src="assets/cli-screenshot-2.svg" alt="Captura terminal busqueda y filtrado">
+      <figcaption>Busqueda y filtrado de secuencias con grep/find/awk.</figcaption>
+    </figure>
+    <figure class="cli-shot">
+      <img src="assets/cli-screenshot-3.svg" alt="Captura terminal procesos y permisos">
+      <figcaption>Monitoreo de procesos, memoria y ejecucion de scripts.</figcaption>
+    </figure>
+    <figure class="cli-shot">
+      <img src="assets/cli-screenshot-4.svg" alt="Captura terminal compresion de resultados">
+      <figcaption>Compresion y control de espacio de disco en resultados.</figcaption>
+    </figure>
+  </div>
+</div>
+
+<div class="lesson">
   <h3>Catalogo detallado de comandos (explorador interactivo)</h3>
-  <p>Debajo podras seleccionar un comando para ver sintaxis, explicacion y ejemplo bioinformatico. Incluye comandos de navegacion, archivos, inspeccion, busqueda, procesamiento, tablas, compresion y permisos.</p>
+  <p>Debajo podras seleccionar un comando para ver sintaxis, explicacion y ejemplo bioinformatico. La biblioteca se expandio usando categorias del repositorio de comandos Linux compartido (sistema, disco, procesos, red, permisos, compresion, etc.).</p>
 </div>
 
 <div class="lesson">
@@ -288,6 +460,7 @@ y documentar cada paso de analisis usando linea de comando.</div>
   <h4>Recursos base usados en este modulo</h4>
   <p><b>Ruta GitHub:</b> <a href="https://github.com/guides4all/Ruta-Terminal-Linea-comandos" target="_blank" rel="noreferrer">guides4all/Ruta-Terminal-Linea-comandos</a></p>
   <p><b>Curso estructurado:</b> <a href="https://platzi.com/cursos/terminal/" target="_blank" rel="noreferrer">Curso de Introduccion a la Terminal y Linea de Comandos (Platzi)</a></p>
+  <p><b>Biblioteca de comandos Linux:</b> <a href="https://gist.github.com/mrcodedev/eef21c633c3916a7e30b01fa07062c2e" target="_blank" rel="noreferrer">Gist Comandos Linux (mrcodedev)</a></p>
   <p>Estos recursos se usan como referencia para el orden pedagogico del contenido.</p>
 </div>
 
@@ -302,6 +475,25 @@ y documentar cada paso de analisis usando linea de comando.</div>
   </select>
   <button id="cliPlanBtn">Generar plan</button>
   <div id="cliPlanOutput" class="code">Selecciona tus horas y genera una ruta de trabajo.</div>
+</div>
+
+<div class="interactive">
+  <h4>Terminal interactiva (simulada)</h4>
+  <label for="cliTrySelect">Elige un comando y ejecútalo para ver salida simulada:</label>
+  <select id="cliTrySelect">
+    <option>pwd</option>
+    <option>ls -lah</option>
+    <option>grep "^>" secuencias.fasta | wc -l</option>
+    <option>find . -name "*.fastq.gz"</option>
+    <option>zcat muestra.fastq.gz | head -n 8</option>
+    <option>df -h</option>
+    <option>du -sh resultados</option>
+    <option>ps -eaf | grep fastqc</option>
+    <option>free -m</option>
+    <option>tar -czvf resultados.tar.gz resultados/</option>
+  </select>
+  <button id="cliRunBtn">Ejecutar comando</button>
+  <div id="cliRunOutput" class="code">$ _</div>
 </div>
 
 <div class="interactive">
@@ -597,6 +789,15 @@ function attachModuleHandlers(moduleKey) {
     renderCommandDetail(cliCommandCatalog[0].cmd);
     commandSelect.addEventListener("change", (event) => {
       renderCommandDetail(event.target.value);
+    });
+
+    const runBtn = document.getElementById("cliRunBtn");
+    const runSelect = document.getElementById("cliTrySelect");
+    const runOutput = document.getElementById("cliRunOutput");
+    runBtn.addEventListener("click", () => {
+      const cmd = runSelect.value;
+      const output = cliSimulatedOutput[cmd] || "Comando no reconocido en el simulador.";
+      runOutput.textContent = `$ ${cmd}\n${output}`;
     });
 
     const btn = document.getElementById("cliCheckBtn");
