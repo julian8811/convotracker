@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BioInteractiva - Aprende Bioinformatica</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__content">
+      <h1>BioInteractiva</h1>
+      <p>
+        Plataforma interactiva para aprender bioinformatica desde cero:
+        linea de comando, busqueda en bases de datos, genomica y filogenetica.
+      </p>
+      <div class="hero__buttons">
+        <button id="goToModulesBtn">Explorar modulos</button>
+        <button id="resetProgressBtn" class="ghost">Reiniciar progreso</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="progress">
+      <h2>Tu progreso</h2>
+      <div class="progress__stats">
+        <div class="card">
+          <h3>Completado</h3>
+          <p><span id="completedCount">0</span> / 4 modulos</p>
+        </div>
+        <div class="card">
+          <h3>Puntaje total</h3>
+          <p><span id="scoreValue">0</span> puntos</p>
+        </div>
+      </div>
+      <div class="progress__bar-wrap">
+        <div id="progressBar" class="progress__bar"></div>
+      </div>
+    </section>
+
+    <section id="modules" class="modules">
+      <h2>Modulos de aprendizaje</h2>
+      <div class="module-grid">
+        <article class="module-card">
+          <h3>1) Linea de comando para bioinformatica</h3>
+          <p>
+            Aprende comandos esenciales para navegar directorios, manipular archivos FASTA/FASTQ y automatizar tareas.
+          </p>
+          <button class="openModuleBtn" data-module="cli">Abrir modulo</button>
+        </article>
+
+        <article class="module-card">
+          <h3>2) Busqueda en bases de datos biologicas</h3>
+          <p>
+            Practica estrategias de consulta en NCBI, UniProt y ENA, incluyendo palabras clave y operadores utiles.
+          </p>
+          <button class="openModuleBtn" data-module="db">Abrir modulo</button>
+        </article>
+
+        <article class="module-card">
+          <h3>3) Genomica</h3>
+          <p>
+            Comprende flujo de analisis genomico: control de calidad, ensamblaje, anotacion, variantes y visualizacion.
+          </p>
+          <button class="openModuleBtn" data-module="genomics">Abrir modulo</button>
+        </article>
+
+        <article class="module-card">
+          <h3>4) Filogenetica</h3>
+          <p>
+            Construye una base solida en alineamiento multiple, modelos evolutivos y lectura de arboles filogeneticos.
+          </p>
+          <button class="openModuleBtn" data-module="phylo">Abrir modulo</button>
+        </article>
+      </div>
+    </section>
+
+    <section id="moduleContent" class="content hidden"></section>
+  </main>
+
+  <footer class="footer">
+    <p>BioInteractiva - Recurso educativo interactivo local</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
