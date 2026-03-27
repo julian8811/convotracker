@@ -215,6 +215,18 @@ button.ghost {
   border: 1px solid #334155;
 }
 
+.line-explain {
+  margin-top: 0.7rem;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.7rem;
+  background: #0b1220;
+}
+
+.line-explain p {
+  margin: 0.35rem 0;
+}
+
 label {
   display: block;
   font-weight: 700;
