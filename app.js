@@ -2288,7 +2288,7 @@ function renderGenomicsEmulators() {
             <label>Error rate (%):</label>
             <input type="range" id="fastq-error" min="0" max="10" value="1">
             <span id="fastq-error-val">1%</span>
-            <button class="emulator-run-btn" onclick="runFastqEmulator()">Generar FASTQ</button>
+            <button class="emulator-run-btn" data-action="runFastqEmulator">Generar FASTQ</button>
           </div>
           <div class="emulator-output" id="fastq-output">
             <div class="output-label">📄 Salida FASTQ:</div>
@@ -2315,7 +2315,7 @@ function renderGenomicsEmulators() {
             <label>Contenido GC (%):</label>
             <input type="range" id="qc-gc" min="20" max="80" value="45">
             <span id="qc-gc-val">45%</span>
-            <button class="emulator-run-btn" onclick="runQcEmulator()">Ejecutar FastQC</button>
+            <button class="emulator-run-btn" data-action="runQcEmulator">Ejecutar FastQC</button>
           </div>
           <div class="emulator-output qc-results" id="qc-output">
             <div class="qc-summary">
@@ -2355,7 +2355,7 @@ function renderGenomicsEmulators() {
             <input type="text" id="align-ref" value="ATGCGATCGATCGATCGATCGTAGCTAGCTAG" readonly>
             <label>Read a alinear:</label>
             <input type="text" id="align-read" value="ATGCGATCGATCGATCGATCGTAGCT">
-            <button class="emulator-run-btn" onclick="runAlignEmulator()">Alinear Read</button>
+            <button class="emulator-run-btn" data-action="runAlignEmulator">Alinear Read</button>
           </div>
           <div class="emulator-output alignment-viewer" id="align-output">
             <div class="alignment-label">🧬 Visualizador de alineamiento:</div>
@@ -2389,7 +2389,7 @@ function renderGenomicsEmulators() {
               <option value="freebayes">FreeBayes</option>
               <option value="deepvariant">DeepVariant</option>
             </select>
-            <button class="emulator-run-btn" onclick="runVariantCallerEmulator()">Ejecutar Variant Calling</button>
+            <button class="emulator-run-btn" data-action="runVariantCallerEmulator">Ejecutar Variant Calling</button>
           </div>
           <div class="emulator-output vc-results" id="vc-output">
             <div class="vc-stats">
@@ -2442,7 +2442,7 @@ function renderGenomicsEmulators() {
               <label>FS <</label>
               <input type="number" id="filter-fs" value="30" min="0" max="100">
             </div>
-            <button class="emulator-run-btn" onclick="runFilterEmulator()">Aplicar Filtros</button>
+            <button class="emulator-run-btn" data-action="runFilterEmulator">Aplicar Filtros</button>
           </div>
           <div class="emulator-output filter-results" id="filter-output">
             <div class="filter-summary">
@@ -2473,7 +2473,7 @@ function renderGenomicsEmulators() {
               <option value="vep">VEP</option>
               <option value="annovar">ANNOVAR</option>
             </select>
-            <button class="emulator-run-btn" onclick="runAnnotationEmulator()">Anotar Variante</button>
+            <button class="emulator-run-btn" data-action="runAnnotationEmulator">Anotar Variante</button>
           </div>
           <div class="emulator-output annot-results" id="annot-output">
             <div class="annot-gene">
@@ -2538,7 +2538,7 @@ function renderGenomicsEmulators() {
               <option value="normal">Normal</option>
               <option value="hpc">High Performance</option>
             </select>
-            <button class="emulator-run-btn pipeline-run" onclick="runPipelineEmulator()">▶️ Ejecutar Pipeline</button>
+            <button class="emulator-run-btn pipeline-run" data-action="runPipelineEmulator">▶️ Ejecutar Pipeline</button>
           </div>
           <div class="emulator-output pipeline-terminal" id="pipe-output">
             <div class="terminal-header">
@@ -3651,7 +3651,7 @@ ATGCGTATG
 >Seq3
 ATGCATACG</textarea>
         </div>
-        <button class="emulator-btn" onclick="runMafft()">▶ Ejecutar</button>
+        <button class="emulator-btn" data-action="runMafft">▶ Ejecutar</button>
         <div class="emulator-output"><pre id="mafftOutput">Resultado...</pre></div>
       </div>
       
@@ -3666,7 +3666,7 @@ ATGCGTACGATGC
 >SpeciesB
 ATGCGTACGATGT</textarea>
         </div>
-        <button class="emulator-btn" onclick="runIQTree()">▶ Ejecutar</button>
+        <button class="emulator-btn" data-action="runIQTree">▶ Ejecutar</button>
         <div class="emulator-output"><pre id="iqtreeOutput">Resultado...</pre></div>
       </div>
       
@@ -3674,7 +3674,7 @@ ATGCGTACGATGT</textarea>
       <div class="emulator-card" id="emulador-beauti">
         <h4>🎨 BEAUti - Configurador BEAST</h4>
         <p>Interfaz para preparar análisis bayesianos.</p>
-        <button class="emulator-btn" onclick="runBEAUTi()">▶ Generar XML</button>
+        <button class="emulator-btn" data-action="runBEAUTi">▶ Generar XML</button>
         <div class="emulator-output"><pre id="beautiOutput">Resultado XML...</pre></div>
       </div>
       
@@ -3682,7 +3682,7 @@ ATGCGTACGATGT</textarea>
       <div class="emulator-card" id="emulador-beast">
         <h4>⚡ BEAST - Análisis Bayesiano</h4>
         <p>Simulador MCMC para inferencia bayesiana.</p>
-        <button class="emulator-btn" onclick="runBEAST()">▶ Ejecutar</button>
+        <button class="emulator-btn" data-action="runBEAST">▶ Ejecutar</button>
         <div class="emulator-output"><pre id="beastOutput">Estado: Listo</pre></div>
       </div>
       
@@ -3690,7 +3690,7 @@ ATGCGTACGATGT</textarea>
       <div class="emulator-card" id="emulador-treeannotator">
         <h4>🌲 TreeAnnotator</h4>
         <p>Consensuar árboles de la posterior.</p>
-        <button class="emulator-btn" onclick="runTreeAnnotator()">▶ Ejecutar</button>
+        <button class="emulator-btn" data-action="runTreeAnnotator">▶ Ejecutar</button>
         <div class="emulator-output"><pre id="treeAnnotOutput">Resultado...</pre></div>
       </div>
       
@@ -3702,7 +3702,7 @@ ATGCGTACGATGT</textarea>
           <label>Árbol Newick:</label>
           <input type="text" id="figtreeInput" value="((A:0.1,B:0.1):0.5,(C:0.2,D:0.2):0.3);">
         </div>
-        <button class="emulator-btn" onclick="renderFigTree()">🌳 Visualizar</button>
+        <button class="emulator-btn" data-action="renderFigTree">🌳 Visualizar</button>
         <div class="emulator-output"><pre id="figtreeOutput">Vista previa...</pre></div>
       </div>
       
@@ -4274,6 +4274,18 @@ function attachTabHandlers() {
         fb.className = 'quiz-feedback incorrect';
       }
     });
+  });
+  
+  // Event delegation para botones de emuladores con data-action
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.emulator-btn, .emulator-run-btn');
+    if (btn && btn.dataset.action) {
+      e.preventDefault();
+      const action = btn.dataset.action;
+      if (typeof window[action] === 'function') {
+        window[action]();
+      }
+    }
   });
 }
 
