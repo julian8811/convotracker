@@ -3787,85 +3787,94 @@ function generateAsciiTree(newick) {
   `;
 }
 
+// ============================================
+// EMULADORES DE FILOGENÉTICA (VERSION UNIFICADA)
+// ============================================
+
+// Definición única de renderPhyloEmuladores - contiene TODOS los emuladores
 function renderPhyloEmuladores() {
   return `
     <div class="phylo-emulators">
       <h3>🧪 Emuladores de Filogenética</h3>
-      <p>Practica con las herramientas de alineamiento, inferencia y visualización filogenética.</p>
+      <p>Practica con las herramientas de alineamiento, inferencia ML, bayesiana y visualización.</p>
       
-      <!-- Emulador MAFFT -->
-      <div class="emulator-card">
+      <!-- EMULADOR MAFFT -->
+      <div class="emulator-card" id="emulador-mafft">
         <h4>🔧 MAFFT - Alineamiento Múltiple</h4>
-        <p>MAFFT es una herramienta rápida y precisa para alineamiento múltiple de secuencias.</p>
-        
+        <p>Herramienta rápida y precisa para alineamiento múltiple de secuencias.</p>
         <div class="emulator-input">
-          <label>Secuencias de entrada (FASTA):</label>
-          <textarea id="mafftInput" rows="4" placeholder=">Seq1
+          <label>Secuencias FASTA:</label>
+          <textarea id="mafftInput" rows="3">>Seq1
 ATGCGTACG
 >Seq2
-ATGCGTATG">>Seq1
-ATGCGTACG
 ATGCGTATG
-ATGCATACG
-ATGCTTACG</textarea>
+>Seq3
+ATGCATACG</textarea>
         </div>
-        
-        <div class="emulator-options">
-          <label>Opción:</label>
-          <select id="mafftOption">
-            <option value="--auto">--auto (Automático)</option>
-            <option value="--genafpair">--genafpair</option>
-            <option value="--localpair">--localpair</option>
-          </select>
-        </div>
-        
-        <button class="emulator-btn" onclick="runMafft()">▶ Ejecutar MAFFT</button>
-        
-        <div class="emulator-output">
-          <pre id="mafftOutput">El alineamiento aparecerá aquí...</pre>
-        </div>
+        <button class="emulator-btn" onclick="runMafft()">▶ Ejecutar</button>
+        <div class="emulator-output"><pre id="mafftOutput">Resultado...</pre></div>
       </div>
       
-      <!-- Emulador IQ-TREE -->
-      <div class="emulator-card">
-        <h4>🧬 IQ-TREE - Inferencia ML</h4>
-        <p>Máxima verosimilitud con selección automática de modelo.</p>
-        
+      <!-- EMULADOR IQ-TREE -->
+      <div class="emulator-card" id="emulador-iqtree">
+        <h4>🧬 IQ-TREE - Máxima Verosimilitud</h4>
+        <p>Inferencia filogenética con selección automática de modelo.</p>
         <div class="emulator-input">
-          <label>Alineamiento (FASTA):</label>
-          <textarea id="iqtreeInput" rows="4" placeholder="Pega tu alineamiento">>SpeciesA
+          <label>Alineamiento:</label>
+          <textarea id="iqtreeInput" rows="3">>SpeciesA
 ATGCGTACGATGC
 >SpeciesB
-ATGCGTACGATGT
->SpeciesC
-ATGCTTAGCGATG
->SpeciesD
-ATGCTTAGCAATG</textarea>
+ATGCGTACGATGT</textarea>
         </div>
-        
-        <div class="emulator-options">
-          <label>Modelo:</label>
-          <select id="iqtreeModel">
-            <option value="TEST">TEST (ModelFinder)</option>
-            <option value="GTR">GTR</option>
-            <option value="GTR+G">GTR+G</option>
-            <option value="JC69">JC69</option>
-          </select>
-          <label>Bootstrap:</label>
-          <select id="iqtreeBootstrap">
-            <option value="1000">1000</option>
-            <option value="100">100</option>
-          </select>
-        </div>
-        
-        <button class="emulator-btn" onclick="runIQTree()">▶ Ejecutar IQ-TREE</button>
-        
-        <div class="emulator-output">
-          <pre id="iqtreeOutput">El árbol aparecerá aquí...</pre>
-        </div>
+        <button class="emulator-btn" onclick="runIQTree()">▶ Ejecutar</button>
+        <div class="emulator-output"><pre id="iqtreeOutput">Resultado...</pre></div>
       </div>
       
       <!-- EMULADOR BEAUTi -->
+      <div class="emulator-card" id="emulador-beauti">
+        <h4>🎨 BEAUti - Configurador BEAST</h4>
+        <p>Interfaz para preparar análisis bayesianos.</p>
+        <button class="emulator-btn" onclick="runBEAUTi()">▶ Generar XML</button>
+        <div class="emulator-output"><pre id="beautiOutput">Resultado XML...</pre></div>
+      </div>
+      
+      <!-- EMULADOR BEAST -->
+      <div class="emulator-card" id="emulador-beast">
+        <h4>⚡ BEAST - Análisis Bayesiano</h4>
+        <p>Simulador MCMC para inferencia bayesiana.</p>
+        <button class="emulator-btn" onclick="runBEAST()">▶ Ejecutar</button>
+        <div class="emulator-output"><pre id="beastOutput">Estado: Listo</pre></div>
+      </div>
+      
+      <!-- EMULADOR TREEANNOTATOR -->
+      <div class="emulator-card" id="emulador-treeannotator">
+        <h4>🌲 TreeAnnotator</h4>
+        <p>Consensuar árboles de la posterior.</p>
+        <button class="emulator-btn" onclick="runTreeAnnotator()">▶ Ejecutar</button>
+        <div class="emulator-output"><pre id="treeAnnotOutput">Resultado...</pre></div>
+      </div>
+      
+      <!-- EMULADOR FIGTREE -->
+      <div class="emulator-card" id="emulador-figtree">
+        <h4>📈 FigTree - Visualización</h4>
+        <p>Visualiza y decora árboles para publicación.</p>
+        <div class="emulator-input">
+          <label>Árbol Newick:</label>
+          <input type="text" id="figtreeInput" value="((A:0.1,B:0.1):0.5,(C:0.2,D:0.2):0.3);">
+        </div>
+        <button class="emulator-btn" onclick="renderFigTree()">🌳 Visualizar</button>
+        <div class="emulator-output"><pre id="figtreeOutput">Vista previa...</pre></div>
+      </div>
+      
+      <!-- EMBELLECIMIENTO -->
+      <div class="emulator-card" id="emulador-beautify">
+        <h4>🎨 Embellecimiento de Árboles</h4>
+        <p>Guía para crear árboles de publicación.</p>
+        <p>Ver sección de Conceptos para guías detalladas.</p>
+      </div>
+    </div>
+  `;
+}
       <div class="emulator-card beast-card">
         <h4>🎨 BEAUti - Configurador de BEAST</h4>
         <p>BEAUti es la interfaz gráfica para preparar análisis BEAST. Genera archivos XML.</p>
