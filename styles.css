@@ -331,6 +331,43 @@ textarea {
   border-color: var(--accent);
 }
 
+/* Header buttons container */
+.header-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Completar módulo button */
+.complete-module-btn {
+  background: linear-gradient(135deg, var(--accent) 0%, #06b6d4 100%);
+  color: #06222b;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.complete-module-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.4);
+}
+
+.complete-module-btn.completed {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  cursor: default;
+}
+
+.complete-module-btn.completed:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 /* Tabs del CLI */
 .cli-tabs {
   display: flex;

@@ -1,10 +1,21 @@
 /**
- * BioInteractiva - Módulo CLI
- * Biblioteca de línea de comandos para bioinformática
- * Estructura reorganizada con categorías, ejemplos visuales e interactivos
+ * BioInteractiva - Módulo CLI (OBSOLETO/DEPRECATED)
+ * ===============================================
+ * Este archivo ya NO se utiliza activamente.
+ * El código CLI fue migrado completamente a app.js.
+ * 
+ * Este archivo se mantiene por compatibilidad histórica.
+ * No se incluye en el cache del Service Worker.
+ * 
+ * Fecha de deprecación: 2026-03-28
+ * 
+ * @deprecated Use app.js en su lugar
  */
 
+/* 
 import { state, STORAGE_KEY, saveState, loadState } from './core.js';
+// El código debajo ya no se ejecuta
+*/
 
 // ============================================
 // BIBLIOTECA DE COMANDOS ORGANIZADA POR CATEGORÍA

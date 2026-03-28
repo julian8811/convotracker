@@ -433,7 +433,7 @@ const cliCommandCatalog = [
   },
   {
     cmd: "samtools",
-    category: "Genomica",
+    category: "Genómica",
     syntax: "samtools flagstat archivo.bam",
     detail:
       "Resumen de calidad y mapeo de lecturas alineadas. Muestra % mapeo, duplicados, etc.",
@@ -441,7 +441,7 @@ const cliCommandCatalog = [
   },
   {
     cmd: "bcftools",
-    category: "Genomica",
+    category: "Genómica",
     syntax: "bcftools view -i 'QUAL>=20' variantes.vcf.gz",
     detail:
       "Filtra variantes por calidad, profundidad o cualquier campo del VCF.",
@@ -449,7 +449,7 @@ const cliCommandCatalog = [
   },
   {
     cmd: "fastqc",
-    category: "Genomica",
+    category: "Genómica",
     syntax: "fastqc archivo.fastq.gz",
     detail:
       "Control de calidad de lecturas. Analiza Phred score, contenido GC, adaptadores.",
@@ -481,7 +481,7 @@ const cliCommandCatalog = [
   },
   {
     cmd: "bwa",
-    category: "Genomica",
+    category: "Genómica",
     syntax: "bwa mem ref.fa reads.fq > alineamiento.sam",
     detail:
       "Alineador de lecturas cortas/medias contra genoma de referencia. Rápido y preciso.",
@@ -489,7 +489,7 @@ const cliCommandCatalog = [
   },
   {
     cmd: "samtools sort",
-    category: "Genomica",
+    category: "Genómica",
     syntax: "samtools sort archivo.sam -o archivo.bam",
     detail:
       "Ordena archivos BAM por posición genómica. Requiere para meisten operaciones.",
@@ -497,7 +497,7 @@ const cliCommandCatalog = [
   },
   {
     cmd: "samtools index",
-    category: "Genomica",
+    category: "Genómica",
     syntax: "samtools index archivo.bam",
     detail:
       "Crea índice .bai para acceso rápido a regiones específicas del BAM.",
@@ -505,7 +505,7 @@ const cliCommandCatalog = [
   },
   {
     cmd: "fastp",
-    category: "Genomica",
+    category: "Genómica",
     syntax: "fastp -i lectura.fq -o lectura_clean.fq",
     detail:
       "Filtrado y control de calidad todo-en-uno. Detecta adaptadores, recorta calidad.",
@@ -513,7 +513,7 @@ const cliCommandCatalog = [
   },
   {
     cmd: "seqkit",
-    category: "Genomica",
+    category: "Genómica",
     syntax: "seqkit stat archivo.fasta",
     detail:
       "Kit de herramientas para secuencias FASTA/FASTQ. Estadísticas, formato, filtering.",
@@ -521,7 +521,7 @@ const cliCommandCatalog = [
   },
   {
     cmd: "bedtools",
-    category: "Genomica",
+    category: "Genómica",
     syntax: "bedtools intersect -a genes.bed -b variantes.vcf",
     detail:
       "Operaciones de genómica intervals. Intersectar variantes con genes, annotaciones.",
@@ -898,8 +898,29 @@ function markModuleDone(moduleKey) {
     state.score += 25;
     saveState();
     updateProgressUI();
+    return true;
   }
+  return false;
 }
+
+// Función expuesta globally para botones de completar módulo
+window.completeModule = function(moduleKey) {
+  const moduleNames = { cli: 'Línea de Comando', db: 'Bases de Datos', genomics: 'Genómica', phylo: 'Filogenética' };
+  
+  if (state.completed[moduleKey]) {
+    alert(`✅ Ya completaste el módulo de ${moduleNames[moduleKey]}`);
+    return;
+  }
+  
+  const confirmed = confirm(`¿Marcar como completado el módulo de ${moduleNames[moduleKey]}?\n\n¡Ganarás 25 puntos!`);
+  if (confirmed) {
+    markModuleDone(moduleKey);
+    alert(`🎉 ¡Felicitaciones! Has completado el módulo de ${moduleNames[moduleKey]}!\n\nPuntos: +25`);
+    
+    // Actualizar la vista del módulo actual
+    renderModule(moduleKey);
+  }
+};
 
 // ============================================
 // RENDERIZADO DE MÓDULOS
@@ -1355,12 +1376,18 @@ function renderDBQuiz() {
 }
 
 function renderDBModule() {
+  const isCompleted = state.completed.db;
   return `
     <div class="cli-module-enhanced">
       <div class="cli-header">
         <h2>🔍 ${moduleData.db.title}</h2>
         <p class="cli-description">${moduleData.db.description}</p>
-        <button class="back-btn" onclick="renderModulesList()">← Volver a módulos</button>
+        <div class="header-buttons">
+          <button class="back-btn" onclick="renderModulesList()">← Volver a módulos</button>
+          <button class="complete-module-btn ${isCompleted ? 'completed' : ''}" onclick="completeModule('db')">
+            ${isCompleted ? '✅ Completado' : '🎯 Completar Módulo'}
+          </button>
+        </div>
       </div>
       
       <div class="cli-tabs">
@@ -2919,12 +2946,18 @@ function renderGenomicsQuiz() {
 }
 
 function renderGenomicsModule() {
+  const isCompleted = state.completed.genomics;
   return `
     <div class="cli-module-enhanced">
       <div class="cli-header">
         <h2>🧬 ${moduleData.genomics.title}</h2>
         <p class="cli-description">${moduleData.genomics.description}</p>
-        <button class="back-btn" onclick="renderModulesList()">← Volver a módulos</button>
+        <div class="header-buttons">
+          <button class="back-btn" onclick="renderModulesList()">← Volver a módulos</button>
+          <button class="complete-module-btn ${isCompleted ? 'completed' : ''}" onclick="completeModule('genomics')">
+            ${isCompleted ? '✅ Completado' : '🎯 Completar Módulo'}
+          </button>
+        </div>
       </div>
       
       <div class="cli-tabs">
@@ -3083,12 +3116,18 @@ function renderPhyloQuiz() {
 }
 
 function renderPhyloModule() {
+  const isCompleted = state.completed.phylo;
   return `
     <div class="cli-module-enhanced">
       <div class="cli-header">
         <h2>🌳 ${moduleData.phylo.title}</h2>
         <p class="cli-description">${moduleData.phylo.description}</p>
-        <button class="back-btn" onclick="renderModulesList()">← Volver a módulos</button>
+        <div class="header-buttons">
+          <button class="back-btn" onclick="renderModulesList()">← Volver a módulos</button>
+          <button class="complete-module-btn ${isCompleted ? 'completed' : ''}" onclick="completeModule('phylo')">
+            ${isCompleted ? '✅ Completado' : '🎯 Completar Módulo'}
+          </button>
+        </div>
       </div>
       
       <div class="cli-tabs">
@@ -3177,6 +3216,7 @@ function renderModule(moduleKey) {
     `;
     
     // Usar el nuevo renderizado con tabs para CLI
+    const isCliCompleted = state.completed.cli;
     container.classList.remove("hidden");
     container.innerHTML = `
       ${wslSection}
@@ -3184,7 +3224,12 @@ function renderModule(moduleKey) {
         <div class="cli-header">
           <h2>🖥️ ${module.title}</h2>
           <p class="cli-description">${module.description}</p>
-          <button class="back-btn" onclick="renderModulesList()">← Volver a módulos</button>
+          <div class="header-buttons">
+            <button class="back-btn" onclick="renderModulesList()">← Volver a módulos</button>
+            <button class="complete-module-btn ${isCliCompleted ? 'completed' : ''}" onclick="completeModule('cli')">
+              ${isCliCompleted ? '✅ Completado' : '🎯 Completar Módulo'}
+            </button>
+          </div>
         </div>
         
         <div class="cli-tabs">
@@ -3395,7 +3440,7 @@ function getCategoryIcon(cat) {
     'Disco': '💾',
     'Procesos': '⚡',
     'Red': '🌐',
-    'Genomica': '🧬'
+    'Genómica': '🧬'
   };
   return icons[cat] || '📌';
 }
@@ -3970,15 +4015,40 @@ Total: 1,234 secuencias en 15.2 segundos`;
 };
 
 // ---------- Handlers Módulo Genomics ----------
+// Pipeline order handler - usado tanto en CLI como Genómica
 window.checkPipelineOrder = function() {
-  const items = document.querySelectorAll('#pipelineSortable .sort-item');
-  let order = [];
-  items.forEach(item => order.push(item.dataset.order));
-  const correct = order.join(',') === '1,2,3,4,5';
-  const fb = document.getElementById('genPipelineFeedback');
+  const inputEl = document.getElementById('pipelineOrderInput');
+  if (!inputEl) {
+    console.error('Elemento pipelineOrderInput no encontrado');
+    return;
+  }
+  const input = inputEl.value.replace(/\s/g, '');
+  
+  // Determinar qué respuesta es correcta según el contexto
+  // CLI: 1,2,3,4,5 | Genómica: 8,1,2,3,4,5,6,7
+  const cliCorrect = '12345';
+  const genCorrect = '81234567';
+  
+  const fb = document.getElementById('genPipelineFeedback') || document.getElementById('pipelineOrderFeedback');
+  if (!fb) {
+    console.error('Elemento de feedback no encontrado');
+    return;
+  }
+  
   fb.classList.remove('hidden');
-  if (correct) { fb.textContent = '✅ ¡Correcto! Pipeline en orden'; fb.className = 'feedback ok'; }
-  else { fb.textContent = '❌ Orden: QC → Trimming → Alignment → Variant Calling → Anotación'; fb.className = 'feedback err'; }
+  
+  if (input === genCorrect) { 
+    fb.textContent = '✅ ¡Correcto! Pipeline: Datos → QC → Trim → Alineamiento → Variant Calling → Filtrado → Anotación → Interpretación'; 
+    fb.className = 'feedback ok'; 
+  }
+  else if (input === cliCorrect) {
+    fb.textContent = '✅ ¡Correcto! Pipeline en orden'; 
+    fb.className = 'feedback ok';
+  }
+  else { 
+    fb.textContent = '❌ Orden: 8,1,2,3,4,5,6,7 (Datos→QC→Trim→Alineamiento→VariantCalling→Filtrado→Anotación→Interpretación)'; 
+    fb.className = 'feedback err'; 
+  }
 };
 
 window.checkGenEx1 = function() {
@@ -4051,18 +4121,6 @@ window.checkGenEx8 = function() {
   fb.classList.remove('hidden');
   if (ok) { fb.textContent = '✅ ¡Correcto! QD = Quality por Depth'; fb.className = 'feedback ok'; }
   else { fb.textContent = '❌ Pista: Quality by Depth'; fb.className = 'feedback err'; }
-};
-
-window.checkPipelineOrder = function() {
-  const input = document.getElementById('pipelineOrderInput').value.replace(/\s/g, '');
-  const fb = document.getElementById('genPipelineFeedback');
-  const correct = '8,1,2,3,4,5,6,7';
-  fb.classList.remove('hidden');
-  if (input === correct) { 
-    fb.textContent = '✅ ¡Correcto! Pipeline: Datos → QC → Trim → Alineamiento → Variant Calling → Filtrado → Anotación → Interpretación'; 
-    fb.className = 'feedback ok'; 
-  }
-  else { fb.textContent = '❌ Orden: 8,1,2,3,4,5,6,7 (Datos→QC→Trim→Alineamiento→VariantCalling→Filtrado→Anotación→Interpretación)'; fb.className = 'feedback err'; }
 };
 
 // Simulador de Genómica
@@ -4626,8 +4684,12 @@ window.runTerminalCommand = function() {
   document.getElementById('terminalInput').value = '';
 };
 
-// Permitir ENTER en terminal
-document.addEventListener('DOMContentLoaded', function() {
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+
+function bindGlobalEvents() {
+  // Permitir ENTER en terminal
   const termInput = document.getElementById('terminalInput');
   if (termInput) {
     termInput.addEventListener('keypress', function(e) {
@@ -4636,13 +4698,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-});
 
-// ============================================
-// INICIALIZACIÓN
-// ============================================
-
-function bindGlobalEvents() {
   // Botón explorar módulos
   const goToModulesBtn = document.getElementById("goToModulesBtn");
   if (goToModulesBtn) {
@@ -5319,34 +5375,7 @@ function initOfflineMode() {
 }
 
 /* ========================================
-   INITIALIZE ALL FEATURES
+   NOTAS DE VERSIÓN
    ======================================== */
-document.addEventListener('DOMContentLoaded', function() {
-  initAchievements();
-  initFabMenu();
-  initOfflineMode();
-  
-  // Agregar botón de multiplayer en el menú
-  const moduleGrid = document.querySelector('.module-grid');
-  if (moduleGrid) {
-    const multiBtn = document.createElement('article');
-    multiBtn.className = 'module-card';
-    multiBtn.innerHTML = `
-      <h3>👥 Multijugador</h3>
-      <p>Compite contra un amigo en preguntas de bioinformática.</p>
-      <button class="openModuleBtn" onclick="startMultiplayer()">Iniciar partida</button>
-    `;
-    moduleGrid.appendChild(multiBtn);
-  }
-  
-  // Agregar botón Speed Run en el header
-  const heroButtons = document.querySelector('.hero__buttons');
-  if (heroButtons) {
-    const speedrunBtn = document.createElement('button');
-    speedrunBtn.className = 'ghost';
-    speedrunBtn.textContent = '⚡ Speed Run';
-    speedrunBtn.onclick = startSpeedRun;
-    speedrunBtn.style.marginTop = '0.5rem';
-  heroButtons.appendChild(speedrunBtn);
-  }
-});
+// v2.1 - Consolidado DOMContentLoaded, fix bugs varios
+// v2.0 - Módulos CLI/DB/Genómica/Filogenética completos
