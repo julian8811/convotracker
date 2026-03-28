@@ -3499,6 +3499,58 @@ function renderCLIExercises() {
         <button onclick="checkEx12()">Verificar</button>
         <div id="ex12-feedback" class="feedback hidden"></div>
       </div>
+
+      <!-- EJERCICIOS FINALES: Usar --help para Genómica -->
+      <div class="exercise-card is-help-exercise">
+        <h4>🏆 Ejercicio Final: Descubrir herramientas con --help</h4>
+        <div class="ejercicio-help-intro">
+          <p><strong>Escenario:</strong> Tienes un archivo <code>mapped.bam</code> y necesitas saber cuántas lecturas se mapean correctamente y el porcentaje de cobertura.</p>
+          <p><strong>Tu misión:</strong> Usa <code>--help</code> para descubrir qué herramienta y opción usar.</p>
+          <div class="pasos-investigacion">
+            <span class="step-badge">1</span> Escribe <code>samtools --help</code> para ver los subcomandos disponibles<br>
+            <span class="step-badge">2</span> Elige el subcomando apropiado y usa <code>--help</code> para ver sus opciones<br>
+            <span class="step-badge">3</span> Escribe el comando final que muestre las estadísticas de mapeo
+          </div>
+        </div>
+        <input type="text" id="ex13-input" placeholder="Escribe tu comando aquí...">
+        <button onclick="checkEx13()">💡 Ver pista</button>
+        <button onclick="checkEx13(true)">Verificar</button>
+        <div id="ex13-feedback" class="feedback hidden"></div>
+      </div>
+
+      <div class="exercise-card is-help-exercise">
+        <h4>🔬 Ejercicio: Filtrar variantes con bcftools</h4>
+        <div class="ejercicio-help-intro">
+          <p><strong>Escenario:</strong> Tienes un archivo <code>variants.vcf</code> con variantes y quieres filtrar solo aquellas con calidad (QUAL) mayor o igual a 30 Y profundidad de lectura (DP) mayor o igual a 10.</p>
+          <p><strong>Tu misión:</strong> Usa <code>bcftools --help</code> para descubrir cómo filtrar variantes.</p>
+          <div class="pasos-investigacion">
+            <span class="step-badge">1</span> Escribe <code>bcftools --help</code> para ver los comandos disponibles<br>
+            <span class="step-badge">2</span> Identifica el subcomando para filtrar VCFs<br>
+            <span class="step-badge">3</span> Escribe el comando con la condición de filtro
+          </div>
+        </div>
+        <input type="text" id="ex14-input" placeholder="Escribe tu comando aquí...">
+        <button onclick="checkEx14()">💡 Ver pista</button>
+        <button onclick="checkEx14(true)">Verificar</button>
+        <div id="ex14-feedback" class="feedback hidden"></div>
+      </div>
+
+      <div class="exercise-card is-help-exercise">
+        <h4>📊 Ejercicio: Control de calidad con FastQC</h4>
+        <div class="ejercicio-help-intro">
+          <p><strong>Escenario:</strong> Tienes archivos FASTQ comprimidos (<code>sample_R1.fastq.gz</code> y <code>sample_R2.fastq.gz</code>) y quieres hacer control de calidad.</p>
+          <p><strong>Tu misión:</strong> Investiga con <code>fastqc --help</code> para:</p>
+          <div class="pasos-investigacion">
+            <span class="step-badge">1</span> Ver cómo especificar múltiples archivos<br>
+            <span class="step-badge">2</span> Descubrir cómo especificar directorio de salida (-o)<br>
+            <span class="step-badge">3</span> Escribe el comando completo
+          </div>
+        </div>
+        <input type="text" id="ex15-input" placeholder="Escribe tu comando aquí...">
+        <button onclick="checkEx15()">💡 Ver pista</button>
+        <button onclick="checkEx15(true)">Verificar</button>
+        <div id="ex15-feedback" class="feedback hidden"></div>
+      </div>
     </div>
 
     <!-- Terminal Virtual Interactivo -->
@@ -4360,6 +4412,73 @@ window.checkEx12 = function() {
   fb.classList.remove('hidden');
   if (ok) { fb.textContent = '✅ ¡Correcto! Descarga genomas de referencia'; fb.className = 'feedback ok'; }
   else { fb.textContent = '❌ Pista: wget https://.../genome.fa.gz'; fb.className = 'feedback err'; }
+};
+
+// Ejercicio 13: samtools con --help
+window.checkEx13 = function(verify = false) {
+  const input = document.getElementById('ex13-input').value.toLowerCase().trim();
+  const fb = document.getElementById('ex13-feedback');
+  
+  // Mostrar hint si no es verificación
+  if (!verify) {
+    fb.classList.remove('hidden');
+    fb.textContent = '💡 Pista: Escribe "samtools --help" en tu terminal para ver los subcomandos. Luego usa "samtools flagstat --help" para ver las opciones. El comando es: samtools flagstat mapped.bam';
+    fb.className = 'feedback hint';
+    return;
+  }
+  
+  const ok = input.includes('samtools') && input.includes('flagstat') && input.includes('.bam');
+  fb.classList.remove('hidden');
+  if (ok) { 
+    fb.textContent = '✅ ¡Excelente! Usaste --help para descubrir samtools flagstat. Este comando muestra estadísticas de mapeo (reads totales, % mapeo, duplicados).'; 
+    fb.className = 'feedback ok'; 
+  }
+  else { fb.textContent = '❌ Pista: samtools --help → samtools flagstat --help → samtools flagstat mapped.bam'; fb.className = 'feedback err'; }
+};
+
+// Ejercicio 14: bcftools filter con --help
+window.checkEx14 = function(verify = false) {
+  const input = document.getElementById('ex14-input').value.toLowerCase().trim();
+  const fb = document.getElementById('ex14-feedback');
+  
+  if (!verify) {
+    fb.classList.remove('hidden');
+    fb.textContent = '💡 Pista: Escribe "bcftools --help" para ver los comandos. El subcomando "view" filtra VCFs. Usa: bcftools view -i "QUAL>=30 && DP>=10" variants.vcf';
+    fb.className = 'feedback hint';
+    return;
+  }
+  
+  const ok = input.includes('bcftools') && 
+             input.includes('view') && 
+             (input.includes('qual>=30') || input.includes('qual > 30') || input.includes('qual >= 30')) &&
+             (input.includes('dp>=10') || input.includes('dp > 10') || input.includes('dp >= 10'));
+  fb.classList.remove('hidden');
+  if (ok) { 
+    fb.textContent = '✅ ¡Perfecto! filtraste variantes por calidad (QUAL) y profundidad (DP).'; 
+    fb.className = 'feedback ok'; 
+  }
+  else { fb.textContent = '❌ Pista: bcftools view -i "QUAL>=30 && DP>=10" variants.vcf'; fb.className = 'feedback err'; }
+};
+
+// Ejercicio 15: FastQC con --help
+window.checkEx15 = function(verify = false) {
+  const input = document.getElementById('ex15-input').value.toLowerCase().trim();
+  const fb = document.getElementById('ex15-feedback');
+  
+  if (!verify) {
+    fb.classList.remove('hidden');
+    fb.textContent = '💡 Pista: Escribe "fastqc --help" para ver las opciones. Puedes pasar múltiples archivos y usar -o para especificar directorio de salida: fastqc sample_R1.fastq.gz sample_R2.fastq.gz -o qc_results/';
+    fb.className = 'feedback hint';
+    return;
+  }
+  
+  const ok = input.includes('fastqc') && input.includes('.fastq.gz') && input.includes('-o');
+  fb.classList.remove('hidden');
+  if (ok) { 
+    fb.textContent = '✅ ¡Genial! FastQC generará informes HTML con estadísticas de calidad.'; 
+    fb.className = 'feedback ok'; 
+  }
+  else { fb.textContent = '❌ Pista: fastqc archivo1.fastq.gz archivo2.fastq.gz -o directorio_salida/'; fb.className = 'feedback err'; }
 };
 
 // Terminal virtual interactivo con más comandos
