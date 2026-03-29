@@ -34,8 +34,8 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
-      signInUrl="https://current-bonefish-34.clerk.accounts.dev/sign-in"
-      signUpUrl="https://current-bonefish-34.clerk.accounts.dev/sign-up"
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
     >
       <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`}>
         <body>{children}</body>

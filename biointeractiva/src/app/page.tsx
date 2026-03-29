@@ -103,8 +103,8 @@ export default function Home() {
               </div>
             ) : (
               <div className="hero__buttons">
-                <a href="https://current-bonefish-34.clerk.accounts.dev/sign-in" className="btn-primary" style={{ display: 'inline-block', textDecoration: 'none', textAlign: 'center' }}>Iniciar Sesión</a>
-                <a href="https://current-bonefish-34.clerk.accounts.dev/sign-up" className="btn-secondary" style={{ display: 'inline-block', textDecoration: 'none', textAlign: 'center' }}>Registrarse</a>
+                <a href="/sign-in" className="btn-primary" style={{ display: 'inline-block', textDecoration: 'none', textAlign: 'center' }}>Iniciar Sesión</a>
+                <a href="/sign-up" className="btn-secondary" style={{ display: 'inline-block', textDecoration: 'none', textAlign: 'center' }}>Registrarse</a>
               </div>
             )}
           </div>
