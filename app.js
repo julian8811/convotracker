@@ -3525,7 +3525,6 @@ Identidad promedio: ~${Math.floor(70 + Math.random() * 25)}%`;
 };
 
 window.runIQTree = function() {
-  alert('runIQTree called!');
   // Handle both full and simplified versions
   const inputEl = document.getElementById('iqtreeInput');
   const modelEl = document.getElementById('iqtreeModel');
@@ -3717,7 +3716,10 @@ ATGCGTACGATGT</textarea>
           <input type="text" id="figtreeInput" value="((A:0.1,B:0.1):0.5,(C:0.2,D:0.2):0.3);">
         </div>
         <button class="emulator-btn" data-action="renderFigTree">🌳 Visualizar</button>
-        <div class="emulator-output"><pre id="figtreeOutput">Vista previa...</pre></div>
+        <div class="emulator-output">
+          <div id="figtreeVisual" class="tree-visual"></div>
+          <pre id="figtreeOutput">Vista previa...</pre>
+        </div>
       </div>
       
       <!-- EMBELLECIMIENTO -->
