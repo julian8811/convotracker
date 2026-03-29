@@ -3904,8 +3904,7 @@ window.renderFigTree = function() {
   const showPosteriorEl = document.getElementById('showPosterior');
   const showAgesEl = document.getElementById('showAges');
   const fontSizeEl = document.getElementById('fontSize');
-  const visual = document.getElementById('figtreeVisual');
-  const styleInfo = document.getElementById('figStyleInfo');
+  const output = document.getElementById('figtreeOutput');
   
   // Use default values if elements don't exist
   const style = styleEl ? styleEl.value : 'rectangular';
@@ -3913,16 +3912,7 @@ window.renderFigTree = function() {
   const showAges = showAgesEl ? showAgesEl.checked : false;
   const fontSize = fontSizeEl ? fontSizeEl.value : '12';
   
-  if (!visual) {
-    alert('Error: No se encontró el contenedor de visualización');
-    return;
-  }
-  
-  const styleNames = { rectangular: 'Rectangular', radial: 'Radial/Circular', unrooted: 'Unrooted' };
-  if (styleInfo) styleInfo.textContent = styleNames[style];
-  
-  visual.style.fontSize = fontSize + 'px';
-  
+  // Generate tree ASCII art
   const treeData = showPosterior ? 
     `                    ┌─ Taxon1 (0.95)
                ┌────┤
@@ -3939,31 +3929,48 @@ window.renderFigTree = function() {
           │
           └────────────── Outgroup`;
   
-  if (style === 'rectangular') {
-    visual.innerHTML = `<div class="ascii-tree rect">${treeData}</div>`;
-  } else if (style === 'radial') {
-    visual.innerHTML = `<div class="ascii-tree radial">${`
-        ┌─ Taxon1
-     ───┤
-        │  ┌─ Taxon2
-        └──┤
-           │  ┌─ Taxon3
-           └──┤
-              └─ Outgroup
-            `}</div>`;
-  } else {
-    visual.innerHTML = `<div class="ascii-tree unrooted">${`
-            Taxon1
-              │
-         ┌────┴────┐
-        /           \\
-   Taxon2         Taxon3
-        \\          /
-         ──────────
-              │
-           Outgroup
-            `}</div>`;
+  const styleNames = { rectangular: 'Rectangular', radial: 'Radial/Circular', unrooted: 'Unrooted' };
+  
+  // Try to update visual element if it exists
+  const visual = document.getElementById('figtreeVisual');
+  if (visual) {
+    visual.style.fontSize = fontSize + 'px';
+    if (style === 'rectangular') {
+      visual.innerHTML = `<div class="ascii-tree rect">${treeData}</div>`;
+    } else if (style === 'radial') {
+      visual.innerHTML = `<div class="ascii-tree radial">        ┌─ Taxon1
+     ────┼───
+         │  ┌─ Taxon2
+         └──┼──
+            │  ┌─ Taxon3
+            └──┼──
+               └─ Outgroup</div>`;
+    } else {
+      visual.innerHTML = `<div class="ascii-tree unrooted">        Taxon1
+           │
+      ┌────┴────┐
+     /           \\
+Taxon2         Taxon3
+     \\          /
+      ─────────
+           │
+        Outgroup</div>`;
+    }
   }
+  
+  // Update text output
+  if (output) {
+    output.textContent = `🌳 FigTree - Visualización
+
+Estilo: ${styleNames[style]}
+Font size: ${fontSize}px
+Mostrar posterior: ${showPosterior ? 'Sí' : 'No'}
+Mostrar edades: ${showAges ? 'Sí' : 'No'}
+
+${treeData}`;
+  }
+  
+  alert('¡Árbol visualizado! (Estilo: ' + styleNames[style] + ')');
 };
 
 window.exportFigTree = function(format) {
