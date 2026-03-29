@@ -3899,6 +3899,7 @@ Listo para visualizar en FigTree.`;
 };
 
 window.renderFigTree = function() {
+  alert('DEBUG: renderFigTree called!'); // Debug
   // Handle both full and simplified versions
   const styleEl = document.querySelector('input[name="treeStyle"]:checked');
   const showPosteriorEl = document.getElementById('showPosterior');
