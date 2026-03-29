@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UserButton, useUser, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { UserButton, Show, SignInButton, SignUpButton, useAuth } from "@clerk/nextjs";
 import { useProgress } from "@/hooks/useProgress";
 
 const modules = [
@@ -28,7 +28,7 @@ const modules = [
 ];
 
 export default function Home() {
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn } = useAuth();
   const [activeModule, setActiveModule] = useState<string | null>(null);
   const { progress, loading, completeModule, totalScore, completedModules } = useProgress();
 
@@ -96,21 +96,21 @@ export default function Home() {
                 línea de comando, búsqueda en bases de datos, genómica y filogenética.
               </p>
             </div>
-            {isSignedIn ? (
+            <Show when="signed-in">
               <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                <span>Hola, {user?.firstName}</span>
                 <UserButton />
               </div>
-            ) : (
+            </Show>
+            <Show when="signed-out">
               <div className="hero__buttons">
-                <SignInButton mode="modal" fallbackRedirectUrl="/">
+                <SignInButton mode="modal">
                   <button className="btn-primary">Iniciar Sesión</button>
                 </SignInButton>
-                <SignUpButton mode="modal" fallbackRedirectUrl="/">
+                <SignUpButton mode="modal">
                   <button className="btn-secondary">Registrarse</button>
                 </SignUpButton>
               </div>
-            )}
+            </Show>
           </div>
         </div>
       </header>
