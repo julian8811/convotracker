@@ -3467,17 +3467,24 @@ _______|          ___ A (0.1)
 
 // Handlers para emuladores
 window.runMafft = function() {
-  const input = document.getElementById('mafftInput').value.trim();
-  const option = document.getElementById('mafftOption').value;
+  // Handle both full and simplified versions
+  const inputEl = document.getElementById('mafftInput');
+  const optionEl = document.getElementById('mafftOption');
   const output = document.getElementById('mafftOutput');
   
-  if (!input) {
-    output.textContent = '❌ Error: Ingresa secuencias en formato FASTA';
-    return;
-  }
+  // Generate sample input if none provided
+  const input = inputEl ? inputEl.value.trim() : '';
+  const option = optionEl ? optionEl.value : 'auto';
+  
+  const actualInput = input || `>Seq1
+ATGCGTACG
+>Seq2
+ATGCGTATG
+>Seq3
+ATGCATACG`;
   
   // Simular alineamiento
-  const lines = input.split('\n').filter(l => l.trim());
+  const lines = actualInput.split('\n').filter(l => l.trim());
   const seqs = [];
   let currentSeq = '';
   
@@ -3518,18 +3525,24 @@ Identidad promedio: ~${Math.floor(70 + Math.random() * 25)}%`;
 };
 
 window.runIQTree = function() {
-  const input = document.getElementById('iqtreeInput').value.trim();
-  const model = document.getElementById('iqtreeModel').value;
-  const bootstrap = document.getElementById('iqtreeBootstrap').value;
+  // Handle both full and simplified versions
+  const inputEl = document.getElementById('iqtreeInput');
+  const modelEl = document.getElementById('iqtreeModel');
+  const bootstrapEl = document.getElementById('iqtreeBootstrap');
   const output = document.getElementById('iqtreeOutput');
   
-  if (!input) {
-    output.textContent = '❌ Error: Ingresa un alineamiento';
-    return;
-  }
+  // Generate sample input if none provided
+  const input = inputEl ? inputEl.value.trim() : '';
+  const model = modelEl ? modelEl.value : 'GTR';
+  const bootstrap = bootstrapEl ? bootstrapEl.value : '1000';
+  
+  const actualInput = input || `>SpeciesA
+ATGCGTACGATGC
+>SpeciesB
+ATGCGTACGATGT`;
   
   // Simular resultado de IQ-TREE
-  const numSeqs = (input.match(/>/g) || []).length || 4;
+  const numSeqs = (actualInput.match(/>/g) || []).length || 4;
   const tree = generateRandomTree(numSeqs);
   
   output.innerHTML = `🏆 IQ-TREE - Resultados
@@ -3718,26 +3731,39 @@ ATGCGTACGATGT</textarea>
 
 // Handlers de BEAST
 window.runBEAUTi = function() {
-  const input = document.getElementById('beautiInput').value.trim();
-  const subst = document.getElementById('beautiSubst').value;
-  const clock = document.getElementById('beautiClock').value;
-  const treePrior = document.getElementById('beautiTreePrior').value;
-  const length = document.getElementById('beautiLength').value;
+  // Handle both full and simplified versions
+  const inputEl = document.getElementById('beautiInput');
+  const substEl = document.getElementById('beautiSubst');
+  const clockEl = document.getElementById('beautiClock');
+  const treePriorEl = document.getElementById('beautiTreePrior');
+  const lengthEl = document.getElementById('beautiLength');
   const output = document.getElementById('beautiOutput');
   
-  if (!input) {
-    output.textContent = '❌ Error: Ingresa secuencias';
-    return;
-  }
+  // Use default values if elements don't exist (simplified version)
+  const input = inputEl ? inputEl.value.trim() : '';
+  const subst = substEl ? substEl.value : 'GTR';
+  const clock = clockEl ? clockEl.value : 'lognormal';
+  const treePrior = treePriorEl ? treePriorEl.value : 'exponential';
+  const length = lengthEl ? lengthEl.value : '1000000';
   
-  const numTaxa = (input.match(/>/g) || []).length || 4;
+  // Generate sample input if none provided
+  const actualInput = input || `>Taxon1
+ATGCGATCGATCG
+>Taxon2
+ATGCGATCGATCT
+>Taxon3
+ATGCAATCGATCA
+>Taxon4
+ATGCGAGTCGATCG`;
+  
+  const numTaxa = (actualInput.match(/>/g) || []).length || 4;
   
   output.textContent = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
 <beast version="2.7" namespace="beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.inference.distribution:beast.base.inference.util:beast.evolution:beast.evolution.alignment:beast.evolution.datatype:beast.evolution.tree:beast.evolution.branchratemodel:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood">
 
   <data id="alignment" dataType="standard">
-${input.split('\n').filter(l => l.trim()).map(l => l.startsWith('>') ? '    <sequence spec="Sequence" taxon="' + l.replace(/[<>]/g, '') + '" value="' : '"' + l.replace(/[^ATGC]/g, '') + '"/>').join('\n')}
+${actualInput.split('\n').filter(l => l.trim()).map(l => l.startsWith('>') ? '    <sequence spec="Sequence" taxon="' + l.replace(/[<>]/g, '') + '" value="' : '"' + l.replace(/[^ATGC]/g, '') + '"/>').join('\n')}
   </data>
 
   <tree spec="Tree" id="tree">
@@ -3834,10 +3860,15 @@ Archivos generados:
 };
 
 window.runTreeAnnotator = function() {
-  const input = document.getElementById('treeAnnotInput').value;
-  const burnin = document.getElementById('treeAnnotBurnin').value;
-  const type = document.getElementById('treeAnnotType').value;
+  // Handle both full and simplified versions
+  const inputEl = document.getElementById('treeAnnotInput');
+  const burninEl = document.getElementById('treeAnnotBurnin');
+  const typeEl = document.getElementById('treeAnnotType');
   const output = document.getElementById('treeAnnotOutput');
+  
+  const input = inputEl ? inputEl.value : 'analisis.trees';
+  const burnin = burninEl ? burninEl.value : '25';
+  const type = typeEl ? typeEl.value : 'mcc';
   
   output.textContent = `Ejecutando TreeAnnotator...
 ─────────────────────────────────
