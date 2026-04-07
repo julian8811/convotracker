@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_, desc, asc
-from datetime import datetime, timedelta
+from sqlalchemy import select, func, or_, desc, asc, case, literal_column
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from app.database import get_db
@@ -117,37 +117,49 @@ async def list_convocatorias(
     # Convertir con campos calculados
     items = [ConvocatoriaResponse.from_orm_with_calculated_fields(item) for item in items_raw]
 
-    # Calcular resumen de contadores
+    # Calcular resumen de contadores usando SQL (optimizado - sin cargar todos los registros a memoria)
     ahora = datetime.now()
-    count_activas = 0
-    count_vencidas = 0
-    count_por_vencer = 0
+    ahora_aware = datetime.now(timezone.utc)
     
-    # Obtener todos para contar (sin paginación para el resumen)
-    count_result = await db.execute(select(Convocatoria).where(Convocatoria.activa == True))
-    all_items = count_result.scalars().all()
+    # Usar CASE de SQL para contar directamente en la base de datos
+    # Esto es mucho más eficiente que cargar todos los registros a memoria
+    resumen_query = select(
+        func.count().label('total'),
+        func.sum(
+            case(
+                (Convocatoria.fecha_cierre.is_(None), 1),  # Sin fecha de cierre = activa
+                (Convocatoria.fecha_cierre > (ahora + timedelta(days=7)), 1),  # Más de 7 días = activa
+                else_=0
+            )
+        ).label('activas'),
+        func.sum(
+            case(
+                (Convocatoria.fecha_cierre < ahora, 1),  # Ya vencida
+                (Convocatoria.estado == 'cerrada', 1),  # O marcada como cerrada
+                else_=0
+            )
+        ).label('vencidas'),
+        func.sum(
+            case(
+                (
+                    Convocatoria.fecha_cierre.isnot(None) & 
+                    (Convocatoria.fecha_cierre <= (ahora + timedelta(days=7))) &
+                    (Convocatoria.fecha_cierre >= ahora),
+                    1  # Por vencer (entre hoy y 7 días)
+                ),
+                else_=0
+            )
+        ).label('por_vencer'),
+    ).where(Convocatoria.activa == True)
     
-    for item in all_items:
-        if item.fecha_cierre:
-            if item.fecha_cierre.tzinfo:
-                fc = item.fecha_cierre.replace(tzinfo=None)
-            else:
-                fc = item.fecha_cierre
-            dias = (fc - ahora).days
-            if dias < 0:
-                count_vencidas += 1
-            elif dias <= 7:
-                count_por_vencer += 1
-            else:
-                count_activas += 1
-        else:
-            count_activas += 1
+    resumen_result = await db.execute(resumen_query)
+    resumen_row = resumen_result.one()
     
     resumen = {
-        "total": total,
-        "activas": count_activas,
-        "vencidas": count_vencidas,
-        "por_vencer": count_por_vencer,  # Vence en menos de 7 días
+        "total": resumen_row.total or 0,
+        "activas": int(resumen_row.activas or 0),
+        "vencidas": int(resumen_row.vencidas or 0),
+        "por_vencer": int(resumen_row.por_vencer or 0),
     }
 
     return ConvocatoriaListResponse(
@@ -216,7 +228,9 @@ async def get_filter_options(db: AsyncSession = Depends(get_db)):
 async def get_scraping_logs(
     limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # Requiere autenticación
 ):
+    """Obtener logs de scraping. Solo usuarios autenticados pueden acceder."""
     result = await db.execute(
         select(ScrapingLog).order_by(desc(ScrapingLog.ejecutado_en)).limit(limit)
     )
@@ -224,8 +238,11 @@ async def get_scraping_logs(
 
 
 @router.post("/admin/cleanup-bad-urls")
-async def cleanup_bad_urls(db: AsyncSession = Depends(get_db)):
-    """Eliminar convocatorias con URLs problemáticas conocidas"""
+async def cleanup_bad_urls(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # Requiere autenticación
+):
+    """Eliminar convocatorias con URLs problemáticas conocidas. Solo usuarios autenticados."""
     deleted_count = 0
     
     # Todas las URLs problemáticas conocidas
@@ -280,13 +297,19 @@ async def cleanup_bad_urls(db: AsyncSession = Depends(get_db)):
 # Import para scraping endpoint
 from app.scraping.scheduler import run_all_scrapers
 from app.services.convocatoria_service import deactivate_expired
+from app.api.auth import get_current_user
+from app.models import User
 
 
 @router.post("/admin/cleanup-expired")
-async def cleanup_expired_convocatorias(db: AsyncSession = Depends(get_db)):
+async def cleanup_expired_convocatorias(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # Requiere autenticación
+):
     """
     Actualiza el estado de convocatorias vencidas a 'cerrada'.
     Este endpoint debe ejecutarse periódicamente (recomendado: cada hora o mediante cron).
+    Solo usuarios autenticados pueden ejecutar esta acción.
     Retorna el número de convocatorias actualizadas.
     """
     count = await deactivate_expired(db)

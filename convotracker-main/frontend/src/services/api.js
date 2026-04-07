@@ -59,8 +59,11 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       clearToken();
-      // Optionally redirect to login
+      // Use replace instead of href to avoid filling browser history
+      // and provide a better UX when user logs back in
       if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        window.location.replace('/login?redirect=' + encodeURIComponent(window.location.pathname));
+      } else {
         window.location.href = '/login';
       }
     }
