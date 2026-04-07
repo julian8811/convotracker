@@ -6,12 +6,14 @@ from typing import Optional
 
 from app.database import get_db
 from app.models.convocatoria import Convocatoria, ScrapingLog
+from app.models.user import User
 from app.schemas.convocatoria import (
     ConvocatoriaResponse,
     ConvocatoriaListResponse,
     ConvocatoriaUpdate,
     ScrapingLogResponse,
 )
+from app.api.auth import get_current_user
 
 router = APIRouter(prefix="/api/v1", tags=["convocatorias"])
 
@@ -316,8 +318,6 @@ async def cleanup_bad_urls(
 # Import para scraping endpoint
 from app.scraping.scheduler import run_all_scrapers
 from app.services.convocatoria_service import deactivate_expired
-from app.api.auth import get_current_user
-from app.models import User
 
 
 @router.post("/admin/cleanup-expired")
