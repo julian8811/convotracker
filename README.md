@@ -1,195 +1,279 @@
-# BioInteractiva 🧬
+# ConvoTracker - Plataforma de Vigilancia Tecnológica y Rastreo de Convocatorias
 
-Plataforma educativa interactiva para aprender bioinformática desde cero: línea de comando, búsqueda en bases de datos, genómica y filogenética.
+ConvoTracker es una aplicación web profesional para rastrear convocatorias nacionales e internacionales orientadas a emprendimiento, proyectos de investigación, innovación y transferencia tecnológica.
 
-## 🌐 Demo
+**Repositorio:** [github.com/julian8811/convotracker](https://github.com/julian8811/convotracker) · **Demo (GitHub Pages):** [julian8811.github.io/convotracker](https://julian8811.github.io/convotracker/)  
+Para que el **scraping funcione en la demo**, despliega el backend en [Render](https://render.com) y configura el secret `VITE_API_URL`. Guía breve: **[COMO_ACTIVAR_SCRAPING_ONLINE.md](COMO_ACTIVAR_SCRAPING_ONLINE.md)** · Detalle técnico: [DEPLOY.md](DEPLOY.md).
 
-**URL**: https://julian8811.github.io/biointeractiva/
+### Ejecutar en local (app completa)
 
-## 📚 Contenido
+1. **Terminal 1 – Backend:** ejecuta `run-backend.bat` (o `.\run-backend.ps1`).  
+   Debe aparecer: `Backend en http://localhost:8000`, `ConvoTracker v1.0.0 started`, `Scheduler started`.  
+   Déjalo abierto.
 
-| Módulo | Descripción |
-|--------|-------------|
-| **1. Línea de Comando** | Comandos esenciales para bioinformática (CLI, grep, awk, samtools, bcftools, FastQC) |
-| **2. Bases de Datos** | Búsqueda en NCBI, UniProt, ENA con operadores y estrategias |
-| **3. Genómica** | Pipeline de análisis: QC, alineamiento, variant calling, visualización |
-| **4. Filogenética** | MSA, modelos evolutivos, BEAST, visualización de árboles |
+2. **Terminal 2 – Frontend:** desde la carpeta `frontend` ejecuta `npm run dev` (o desde la raíz: `cd frontend && npm run dev`).  
+   Debe aparecer: `Local: http://localhost:5173/`.  
+   Déjalo abierto.
 
-## 🚀 Características
+3. **Abrir la app:** en el navegador entra a **http://localhost:5173**.  
+   Desde ahí tendrás convocatorias, scraping, dashboard y reportes PDF usando el backend en el puerto 8000.
 
-- ✅ Aprende línea de comando con ejercicios interactivos
-- ✅ Emuladores de herramientas bioinformáticas (MAFFT, IQ-TREE, BEAST, FigTree)
-- ✅ Quiz por módulo para evaluar conocimientos
-- ✅ Progreso guardado automáticamente (localStorage)
-- ✅ Modo offline (PWA con Service Worker)
-- ✅ Diseño responsive (móvil y desktop)
+4. **Scraping:** para que "Ejecutar Scraping" funcione, el **backend debe estar en marcha primero**. Si ves "No hay conexión con el backend", comprueba que en http://localhost:8000/docs la API responde y vuelve a intentar.
 
-## 🛠️ Tecnologías
+### En GitHub
 
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3
-- **Storage**: localStorage para persistencia
-- **PWA**: Service Worker para offline
+- La **demo** (frontend) está en **https://julian8811.github.io/convotracker/**.
+- Cada push a `main` vuelve a desplegar la demo automáticamente (GitHub Actions).
+- El **backend** no se ejecuta en GitHub Pages; para scraping y datos en vivo hay que usar la app en local (pasos de arriba).
 
-## 📁 Estructura
+## Descripción Funcional
+
+- **Web scraping automatizado** diario de fuentes oficiales: Colombia (Minciencias, iNNpulsa, SENA), UE (EU Funding, CORDIS), organismos internacionales (Banco Mundial, PNUD, BID, CAF, UNESCO, GIZ), nacionales (CONACYT México, UKRI Reino Unido) y **API pública Grants.gov (EE.UU.)** sin API key
+- **Clasificación inteligente** por sector, país, entidad, tipo, fechas y montos
+- **Eliminación de duplicados** mediante hashing de contenido
+- **Actualización automática** de estados (abierta, cerrada, próxima)
+- **Interfaz moderna** con búsqueda avanzada, filtros y paginación
+- **Dashboard analítico** con gráficos interactivos (Recharts)
+- **Reportes PDF** profesionales individuales y consolidados
+- **Gestión de scraping** con historial de ejecuciones y monitoreo
+
+## Arquitectura Tecnológica
+
+### Backend
+- **Python 3.11+** con **FastAPI** (async)
+- **SQLAlchemy 2.0** con SQLite (async, migrable a PostgreSQL)
+- **APScheduler** para tareas programadas
+- **BeautifulSoup4 + httpx** para web scraping
+- **ReportLab** para generación de PDFs
+
+### Frontend
+- **React 18** con Vite
+- **TailwindCSS** para estilos
+- **Recharts** para visualizaciones
+- **Lucide React** para iconografía
+- **React Router** para navegación SPA
+
+## Estructura del Proyecto
 
 ```
-biointeractiva/
-├── index.html          # Entry point
-├── app.js             # Lógica principal (~6700 líneas)
-├── styles.css         # Estilos (~4000 líneas)
-├── sw.js              # Service Worker (PWA)
-├── js/
-│   ├── core.js        # Estado y persistencia
-│   └── cli-module.js  # Módulo CLI (deprecado)
-└── assets/
-    └── captures/      # Capturas de terminal SVG
+ConvoTracker/
+├── run-backend.ps1    # Script para iniciar backend (Windows)
+├── run-frontend.ps1   # Script para iniciar frontend (Windows)
+├── run-backend.bat    # Alternativa .bat para backend
+├── run-frontend.bat   # Alternativa .bat para frontend
+├── backend/
+│   ├── app/
+│   │   ├── api/            # Endpoints REST
+│   │   ├── models/         # Modelos SQLAlchemy
+│   │   ├── schemas/        # Esquemas Pydantic
+│   │   ├── scraping/       # Motor de scraping
+│   │   │   └── sources/    # Scrapers por fuente
+│   │   ├── services/       # Lógica de negocio y PDF
+│   │   ├── utils/          # Utilidades
+│   │   ├── config.py       # Configuración
+│   │   ├── database.py     # Conexión BD
+│   │   └── main.py         # App FastAPI
+│   ├── requirements.txt
+│   ├── seed_data.py        # Datos de demostración (100+ convocatorias Colombia y mundial)
+│   └── run.py              # Script de inicio
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # Componentes React
+│   │   ├── pages/          # Páginas
+│   │   ├── services/       # API client
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   └── index.html
+└── README.md
 ```
 
-## 🎯 Cómo Contribuir
+## Instalación y Ejecución
 
-### Agregar Nuevo Contenido
+### Ejecución rápida (Windows)
 
-#### 1. Nuevo Módulo
-Para agregar un nuevo módulo, edita `app.js`:
+1. **Backend:** doble clic en `run-backend.bat` o en PowerShell: `.\run-backend.ps1`  
+   - Crea el venv, instala dependencias y carga datos de ejemplo si es la primera vez.  
+   - Servidor en **http://localhost:8000** · API docs: **http://localhost:8000/docs**
 
-```javascript
-// Agregar en moduleData (línea ~547)
-const moduleData = {
-  nuevo_modulo: {
-    title: "Nuevo Módulo",
-    description: "Descripción breve"
-  },
-  // ... módulos existentes
-};
+2. **Frontend:** en otra terminal, doble clic en `run-frontend.bat` o: `.\run-frontend.ps1`  
+   - Instala dependencias si hace falta y arranca Vite.  
+   - App en **http://localhost:5173** (el backend debe estar corriendo en 8000).
 
-// Crear funciones de renderizado
-function renderNuevoModuloLesson() { /* contenido */ }
-function renderNuevoModuloInteractive() { /* ejercicios */ }
-function renderNuevoModuloQuiz() { /* quiz */ }
-function renderNuevoModuloModule() {
-  return `<div class="cli-module-enhanced">
-    <div class="cli-header">...</div>
-    <div class="cli-tabs">...</div>
-  </div>`;
-}
-```
+### Requisitos
+- Python 3.11 o superior (backend)
+- Node.js 18 o superior y npm (frontend)
 
-#### 2. Nuevo Ejercicio
-En `app.js`, busca la función `renderXxxExercises()` y agrega:
-
-```javascript
-<div class="exercise-card">
-  <h5>✏️ Nuevo Ejercicio</h5>
-  <p>Descripción del ejercicio</p>
-  <input type="text" id="nuevoEx-input" placeholder="respuesta">
-  <button onclick="checkNuevoEx()">Verificar</button>
-  <div id="nuevoExFeedback" class="feedback hidden"></div>
-</div>
-```
-
-Agrega la función verificadora:
-
-```javascript
-window.checkNuevoEx = function() {
-  const input = document.getElementById('nuevoEx-input').value;
-  const fb = document.getElementById('nuevoExFeedback');
-  const ok = /* lógica de verificación */;
-  fb.classList.remove('hidden');
-  if (ok) { fb.textContent = '✅ ¡Correcto!'; fb.className = 'feedback ok'; }
-  else { fb.textContent = '❌ Intenta de nuevo'; fb.className = 'feedback err'; }
-};
-```
-
-#### 3. Nuevo Emulador
-Para crear un emulador, agrega en la función `renderXxxEmulators()`:
-
-```javascript
-<div class="emulator-card">
-  <h4>🔧 Nombre del Emulador</h4>
-  <div class="emulator-input">
-    <label>Entrada:</label>
-    <textarea id="emuladorInput"></textarea>
-  </div>
-  <button class="emulator-btn" onclick="runEmulador()">▶ Ejecutar</button>
-  <div class="emulator-output">
-    <pre id="emuladorOutput">Resultado...</pre>
-  </div>
-</div>
-```
-
-#### 4. Nuevo Quiz
-En la función `renderXxxQuiz()`:
-
-```javascript
-const questions = [
-  { q: "¿Tu pregunta?", options: ["A", "B", "C"], answer: 0 }
-];
-```
-
-### Estilos CSS
-
-Agrega estilos en `styles.css`:
-
-```css
-.nuevo-elemento {
-  background: var(--panel);
-  padding: 1rem;
-  border-radius: 8px;
-}
-```
-
-### Service Worker
-
-Cuando modifiques `app.js` o `styles.css`, actualiza la versión del cache en `sw.js`:
-
-```javascript
-const CACHE_VERSION = 'v8';  // Incrementa
-```
-
-## 🧪 Testing
-
-Para probar cambios locally:
+### 1. Backend (manual)
 
 ```bash
-# Usar un servidor local
-npx serve .
+cd backend
+python -m venv venv
 
-# O con Python
-python -m http.server 8000
+# Windows
+venv\Scripts\activate
+
+# Linux/Mac
+source venv/bin/activate
+
+pip install -r requirements.txt
+
+# Cargar datos de demostración (opcional)
+python seed_data.py
+
+# Iniciar servidor
+python run.py
 ```
 
-Luego abre http://localhost:8000
+El backend estará disponible en `http://localhost:8000`
+- Documentación API: `http://localhost:8000/docs`
+- Health check: `http://localhost:8000/health`
 
-## 📝 Convenciones
+### 2. Frontend
 
-### Nombres de Funciones
-- `renderXxxModule()` - Renderiza el módulo completo con tabs
-- `renderXxxLesson()` - Contenido teórico
-- `renderXxxInteractive()` - Ejercicios
-- `renderXxxQuiz()` - Cuestionario
-- `renderXxxEmulators()` - Emuladores de herramientas
-- `checkXxx()` - Verifica respuestas
-
-### Estilos
-- Usar variables CSS (`--accent`, `--bg`, `--panel`)
-- Dark theme por defecto
-- Clases BEM (`block__element--modifier`)
-
-### Git Commits
-Usa conventional commits:
-
-```
-feat: add new exercise
-fix: resolve bug in emulators
-chore: update service worker
-docs: update README
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-## 📄 Licencia
+El frontend estará disponible en `http://localhost:5173`
 
-MIT License - Feel free to use and modify!
+## Módulos Principales
 
-## 🙏 Agradecimientos
+### 1. Motor de Scraping
+- Scrapers modulares por fuente (patrón Strategy)
+- Clase base `BaseScraper` con fetch HTTP y parsing HTML
+- Scheduler con APScheduler (cada 24h configurable)
+- Deduplicación por hash SHA-256
+- Logs de ejecución
 
-- Comunidad de bioinformática
-- Desarrolladores de herramientas como MAFFT, IQ-TREE, BEAST, FigTree
+### 2. API REST
+- CRUD de convocatorias con filtros avanzados
+- Dashboard con estadísticas agregadas
+- Gestión de scraping (trigger manual, logs, fuentes)
+- Generación de reportes PDF
+- Paginación y ordenamiento
+
+### 3. Frontend SPA
+- Home con hero, estadísticas y últimas convocatorias
+- Lista con búsqueda, filtros y paginación
+- Detalle de convocatoria con toda la información
+- Dashboard con gráficos interactivos
+- Panel de scraping con monitoreo
+
+### 4. Reportes PDF
+- Reporte individual por convocatoria
+- Reporte consolidado con tabla resumen
+- Diseño profesional con ReportLab
+
+## API Endpoints
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/v1/convocatorias` | Listar con filtros |
+| GET | `/api/v1/convocatorias/{id}` | Detalle |
+| PATCH | `/api/v1/convocatorias/{id}` | Actualizar |
+| GET | `/api/v1/filters/options` | Opciones de filtros |
+| GET | `/api/v1/dashboard/stats` | Estadísticas |
+| POST | `/api/v1/scraping/run` | Ejecutar scraping |
+| GET | `/api/v1/scraping/logs` | Historial |
+| GET | `/api/v1/scraping/sources` | Fuentes |
+| GET | `/api/v1/reports/convocatoria/{id}` | PDF individual |
+| GET | `/api/v1/reports/all` | PDF consolidado |
+
+## Modelo de Datos
+
+### Convocatoria
+- `id`, `titulo`, `descripcion`, `entidad`, `pais`, `region`
+- `sector`, `tipo`, `estado`, `fecha_publicacion`, `fecha_apertura`, `fecha_cierre`
+- `monto_minimo`, `monto_maximo`, `moneda`
+- `url_fuente`, `url_terminos`, `requisitos`, `beneficiarios`
+- `tags`, `hash_contenido`, `fuente_scraping`, `activa`
+- `created_at`, `updated_at`
+
+### ScrapingLog
+- `id`, `fuente`, `estado`, `registros_encontrados`
+- `registros_nuevos`, `registros_actualizados`
+- `error_mensaje`, `duracion_segundos`, `ejecutado_en`
+
+## Roadmap de Desarrollo
+
+### Fase 1 (Actual)
+- [x] Backend FastAPI con API REST
+- [x] Motor de scraping con 5 fuentes
+- [x] Frontend React con dashboard
+- [x] Reportes PDF
+- [x] Búsqueda y filtros avanzados
+
+### Fase 2
+- [ ] Autenticación de usuarios (JWT)
+- [ ] Notificaciones por email
+- [ ] Más fuentes de scraping (COLCIENCIAS, BID, OEA)
+- [ ] Alertas personalizadas por usuario
+- [ ] Exportar a Excel/CSV
+
+### Fase 3
+- [ ] IA para clasificación automática de convocatorias
+- [ ] Sistema de favoritos y seguimiento
+- [ ] API pública con API keys
+- [ ] Deploy en la nube (AWS/GCP/Azure)
+- [ ] App móvil (React Native)
+
+## Seguridad y Mantenimiento
+
+- CORS configurado para orígenes permitidos
+- Rate limiting en endpoints de scraping
+- Validación de entrada con Pydantic
+- Hash de contenido para integridad
+- Variables de entorno para configuración sensible
+- Logs estructurados para monitoreo
+- Respaldos periódicos de base de datos recomendados
+
+## Tecnologías
+
+| Componente | Tecnología |
+|------------|------------|
+| Backend | FastAPI, Python 3.11+ |
+| Base de datos | SQLite / PostgreSQL |
+| ORM | SQLAlchemy 2.0 (async) |
+| Scraping | BeautifulSoup4, httpx |
+| Scheduling | APScheduler |
+| Frontend | React 18, Vite |
+| Estilos | TailwindCSS |
+| Gráficos | Recharts |
+| PDFs | ReportLab |
+| Iconos | Lucide React |
+
+## Despliegue en GitHub
+
+El proyecto está preparado para subirse a tu cuenta **julian8811**:
+
+1. **Crea un repositorio nuevo** en GitHub:
+   - Ve a [github.com/new](https://github.com/new)
+   - Nombre sugerido: `convotracker`
+   - Deja el repo vacío (sin README, sin .gitignore)
+
+2. **Sube el código** (en la carpeta del proyecto):
+   ```bash
+   git remote add origin https://github.com/julian8811/convotracker.git
+   git branch -M main
+   git push -u origin main
+   ```
+   Si ya añadiste el `remote`, solo ejecuta: `git push -u origin main`
+
+3. Si GitHub te pide autenticación, usa un **Personal Access Token** (Settings → Developer settings → Personal access tokens) como contraseña.
+
+### Si el workflow de Pages falla con "Get Pages site failed"
+
+1. Entra en el repo → **Settings** → **Pages**.
+2. En **Build and deployment**, **Source** debe ser **GitHub Actions**.
+3. Si no aparece esa opción, elige **Deploy from a branch** y luego vuelve a **GitHub Actions** cuando esté disponible. Guarda.
+4. Vuelve a ejecutar el workflow (Actions → Deploy ConvoTracker to GitHub Pages → Re-run all jobs).
+
+---
+
+Desarrollado con ConvoTracker v1.0

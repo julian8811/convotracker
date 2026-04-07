@@ -1,0 +1,16 @@
+# Render: backend ConvoTracker
+# Se ejecuta todo desde la raíz del repo (sin Root Directory) para evitar errores de requirements.txt
+
+services:
+  - type: web
+    name: convotracker-api
+    runtime: python
+    region: oregon
+
+    # Sin rootDir: build y start usan "cd backend" para que funcione siempre
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.8"
