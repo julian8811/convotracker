@@ -200,6 +200,25 @@ async def update_convocatoria(
     return conv
 
 
+@router.delete("/convocatorias/{convocatoria_id}", status_code=204)
+async def delete_convocatoria(
+    convocatoria_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # Requiere autenticación
+):
+    """Eliminar una convocatoria. Solo usuarios autenticados."""
+    result = await db.execute(
+        select(Convocatoria).where(Convocatoria.id == convocatoria_id)
+    )
+    conv = result.scalar_one_or_none()
+    if not conv:
+        raise HTTPException(status_code=404, detail="Convocatoria no encontrada")
+
+    await db.delete(conv)
+    await db.commit()
+    return None
+
+
 @router.get("/filters/options")
 async def get_filter_options(db: AsyncSession = Depends(get_db)):
     paises = await db.execute(

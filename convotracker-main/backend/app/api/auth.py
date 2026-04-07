@@ -110,3 +110,39 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     """Get current user information."""
     return current_user
+
+
+@router.post("/change-password")
+async def change_password(
+    data: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Cambiar contraseña del usuario actual."""
+    old_password = data.get("old_password")
+    new_password = data.get("new_password")
+    
+    if not old_password or not new_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="old_password and new_password are required"
+        )
+    
+    if len(new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 6 characters"
+        )
+    
+    # Verify old password
+    if not verify_password(old_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect"
+        )
+    
+    # Update password
+    current_user.password_hash = hash_password(new_password)
+    await db.commit()
+    
+    return {"message": "Password changed successfully"}

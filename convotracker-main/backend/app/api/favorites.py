@@ -125,3 +125,26 @@ async def remove_favorite(
     await db.commit()
     
     return None
+
+
+@router.get("/check/{convocatoria_id}", response_model=dict)
+async def check_favorite(
+    convocatoria_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Check if a specific convocatoria is favorited. More efficient than loading all favorites."""
+    result = await db.execute(
+        select(Favorite).where(
+            and_(
+                Favorite.convocatoria_id == convocatoria_id,
+                Favorite.user_id == current_user.id
+            )
+        )
+    )
+    favorite = result.scalar_one_or_none()
+    
+    return {
+        "is_favorite": favorite is not None,
+        "favorite_id": favorite.id if favorite else None
+    }

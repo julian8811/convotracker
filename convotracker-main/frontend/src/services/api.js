@@ -150,4 +150,8 @@ export const addFavorite = (convocatoriaId) =>
 export const removeFavorite = (favoriteId) =>
   api.delete(`/favorites/${favoriteId}`).then(r => r.data);
 
+// Check if a specific convocatoria is favorited (more efficient)
+export const checkFavorite = (convocatoriaId) =>
+  api.get(`/favorites/check/${convocatoriaId}`).then(r => r.data);
+
 export default api;

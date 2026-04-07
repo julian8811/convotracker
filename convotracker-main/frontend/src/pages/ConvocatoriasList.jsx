@@ -236,6 +236,7 @@ export default function ConvocatoriasList() {
               { label: 'País',    key: 'pais',   opts: options.paises,   placeholder: 'Todos' },
               { label: 'Tipo',    key: 'tipo',   opts: options.tipos,    placeholder: 'Todos', map: tipoLabels },
               { label: 'Sector',  key: 'sector', opts: options.sectores, placeholder: 'Todos' },
+              { label: 'Entidad', key: 'entidad', opts: options.entidades, placeholder: 'Todas' },
             ].map(({ label, key, opts, placeholder, map }) => (
               <div key={key}>
                 <p className="panel-title" style={{ marginBottom: 6, fontSize: 10 }}>{label}</p>
