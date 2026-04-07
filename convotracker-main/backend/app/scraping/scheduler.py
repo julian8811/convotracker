@@ -19,19 +19,21 @@ from app.scraping.sources.unesco import UNESCOScraper
 from app.scraping.sources.caf import CAFScraper
 from app.scraping.sources.giz import GIZScraper
 from app.scraping.sources.cordis import CORDISScraper
-from app.scraping.sources.grants_gov_api import GrantsGovAPIFetcher
+# DESHABILITADO: GrantsGovAPIFetcher genera datos falsos (busca cualquier enlace con "grant")
+# from app.scraping.sources.grants_gov_api import GrantsGovAPIFetcher
 from app.scraping.sources.mintic import MinTICScraper
 from app.scraping.sources.bancoldex import BancoldexScraper
 
 logger = logging.getLogger(__name__)
 
 SCRAPERS = [
-    # Colombia/Latam prioritarios
+    # Colombia/Latam prioritarios (hacen scraping real)
     MincienciasScraper(),
     SenaScraper(),
     MinTICScraper(),
     BancoldexScraper(),
-    # Internacional (requieren verificación de URLs)
+    # Internacional - Datos verificados manualmente (no hacen scraping real)
+    # Estos devuelven listas curadas de convocatorias conocidas
     EUFundingScraper(),
     CORDISScraper(),
     WorldBankScraper(),
@@ -42,7 +44,7 @@ SCRAPERS = [
     UKRIScraper(),
     UNESCOScraper(),
     GIZScraper(),
-    GrantsGovAPIFetcher(),
+    # DESHABILITADO: GrantsGovAPIFetcher() - genera datos falsos
 ]
 
 # Timeout por scraper (en segundos)
@@ -85,7 +87,10 @@ async def run_all_scrapers():
 
             for item in report.get("results", []):
                 try:
-                    _, is_new = await upsert_convocatoria(db, item)
+                    conv, is_new = await upsert_convocatoria(db, item)
+                    if conv is None:
+                        # La convocatoria no pasó la validación, se ignora
+                        continue
                     if is_new:
                         new_count += 1
                     else:
@@ -128,7 +133,9 @@ async def run_single_scraper(scraper_name: str):
         new_count = 0
         for item in report.get("results", []):
             try:
-                _, is_new = await upsert_convocatoria(db, item)
+                conv, is_new = await upsert_convocatoria(db, item)
+                if conv is None:
+                    continue
                 if is_new:
                     new_count += 1
             except Exception as e:

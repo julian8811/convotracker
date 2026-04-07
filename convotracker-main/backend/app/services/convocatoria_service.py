@@ -3,9 +3,97 @@ from sqlalchemy import select
 from app.models.convocatoria import Convocatoria
 from app.schemas.convocatoria import ConvocatoriaCreate
 from app.utils.helpers import generate_hash
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Fuentes conocidas y válidas ( whitelist )
+VALID_SOURCES = {
+    "Minciencias Colombia": "minciencias.gov.co",
+    "iNNpulsa Colombia": "innpulsa",
+    "SENA": "sena.gov.co",
+    "MinTIC Colombia": "mintic.gov.co",
+    "Bancoldex": "bancoldex.com",
+    "BID / IDB": "bidlab.org",
+    "Banco Mundial": "worldbank.org",
+    "UNESCO": "unesco.org",
+    "UNDP": "undp.org",
+    "CAF": "caf.com",
+    "GIZ": "giz.de",
+    "UKRI": "ukri.org",
+    "CONACYT México": "conacyt.mx",
+    "EU Funding": "europa.eu",
+    "CORDIS": "cordis.europa.eu",
+}
+
+
+def is_valid_convocatoria(data: dict) -> bool:
+    """
+    Valida que una convocatoria tenga los datos mínimos requeridos.
+    Returns True si es válida, False si debe ignorarse.
+    """
+    titulo = data.get("titulo", "").strip()
+    descripcion = data.get("descripcion", "").strip()
+    entidad = data.get("entidad", "").strip()
+    url_fuente = data.get("url_fuente", "").strip()
+    
+    # Validar título mínimo
+    if not titulo or len(titulo) < 10:
+        logger.warning(f"Convocatoria rechazada: título muy corto '{titulo}'")
+        return False
+    
+    # Validar descripción mínima
+    if not descripcion or len(descripcion) < 20:
+        logger.warning(f"Convocatoria rechazada: descripción muy corta para '{titulo}'")
+        return False
+    
+    # Validar que tenga entidad
+    if not entidad:
+        logger.warning(f"Convocatoria rechazada: sin entidad para '{titulo}'")
+        return False
+    
+    # Validar URL si existe
+    if url_fuente:
+        # Verificar que la URL sea válida y no sea genérica
+        if not url_fuente.startswith("http"):
+            logger.warning(f"Convocatoria rechazada: URL inválida '{url_fuente}'")
+            return False
+        
+        # URLs muy genéricas que no son convocatorias específicas
+        generic_patterns = [
+            "facebook.com/sharer",
+            "twitter.com/intent",
+            "linkedin.com/share",
+            "mailto:",
+            "tel:",
+        ]
+        for pattern in generic_patterns:
+            if pattern in url_fuente.lower():
+                logger.warning(f"Convocatoria rechazada: URL genérica '{url_fuente}'")
+                return False
+    
+    # Verificar que no sea "placeholder" o genérico
+    generic_titles = [
+        "click here",
+        "read more",
+        "learn more",
+        "ver más",
+        "más información",
+        "saber más",
+    ]
+    if titulo.lower() in generic_titles:
+        logger.warning(f"Convocatoria rechazada: título genérico '{titulo}'")
+        return False
+    
+    return True
 
 
 async def upsert_convocatoria(db: AsyncSession, data: dict) -> tuple[Convocatoria, bool]:
+    # Primero validar que los datos sean suficientes
+    if not is_valid_convocatoria(data):
+        logger.info(f"Convocatoria ignorada por validación: {data.get('titulo', 'sin título')[:50]}...")
+        return None, False
+    
     content_for_hash = f"{data.get('titulo', '')}{data.get('url_fuente', '')}{data.get('entidad', '')}"
     hash_val = generate_hash(content_for_hash)
 
